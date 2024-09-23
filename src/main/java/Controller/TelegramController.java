@@ -4,8 +4,6 @@ import Service.ItemService;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
-import java.io.*;
-
 import static Config.BotConfig.properties;
 
 public class TelegramController extends TelegramLongPollingBot {
@@ -41,8 +39,11 @@ public class TelegramController extends TelegramLongPollingBot {
                 String message = update.getMessage().getText();
                 // Start sales process with /venta
                 if (!saleProcess && message.equals("/venta")) {
-                    itemService.startSale(update);
-                    saleProcess = true;
+                    //check for unuploaded items
+                    if (!itemService.scanNonUploadedItems(update)) {
+                        itemService.startSale(update);
+                        saleProcess = true;
+                    }
                 } else if (saleProcess && message.equals("/venta")) {
                     itemService.saleAlreadyStarted(update);
                     //verify info

@@ -18,7 +18,18 @@ public class Item {
         this.file = file;
     }
 
+    public Item(File file, ArrayList<String> paths){
+        this.file = file;
+        this.paths = paths;
+    }
+
     public void addPath(String path) {
         paths.add(path);
     }
+
+    public void renameFile(File tempFile){
+        this.file.delete();
+        tempFile.renameTo(this.file);
+    }
+
 }

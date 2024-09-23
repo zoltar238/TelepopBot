@@ -11,32 +11,72 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import java.io.*;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Objects;
 
 import static Config.BotConfig.properties;
 
 public class ItemService {
     private final ArrayList<Item> items = new ArrayList<>();
     private String title;
-    private final String downloadPath = properties.getProperty("DownloadPath");
+    private final java.io.File downloadPath = new java.io.File(properties.getProperty("DownloadPath"));
     private int imageCounter = 1;
-    private final TelegramLongPollingBot bot; // Agregar bot aquí
+    private final TelegramLongPollingBot bot;
 
     // Constructor
     public ItemService(TelegramLongPollingBot bot) {
         this.bot = bot;
-        System.out.println(downloadPath);
     }
 
     //sale start
-    public void startSale(Update update){
+    public void startSale(Update update) {
         sendResponse(update, """
-                            Escribe título y descripción siguiendo el siguiente formato:
-                             Titulo: xxxx
-                             Descripcion: xxxx""");
+                Escribe título y descripción siguiendo el siguiente formato:
+                 Titulo: xxxx
+                 Descripcion: xxxx""");
+    }
+
+    public Boolean scanNonUploadedItems(Update update) {
+        sendResponse(update, "Escaneando articulos sin subir");
+        String[] items = downloadPath.list();
+        ArrayList<Item> nonUploadedItems = new ArrayList<>();
+        //if item list is not empty check for non uploaded items
+        if (items != null) {
+            for (String item : items) {
+                try (BufferedReader br = new BufferedReader(new FileReader(downloadPath + "\\" + item + "\\" + item))){
+                    br.readLine();
+                    br.readLine();
+                    String status = br.readLine();
+                    if (status.equals("sinSubir")) {
+                        // get all files inside directory except for the first
+                        String[] files = Objects.requireNonNull(new java.io.File(downloadPath + "\\" + item).list());
+                        System.out.println(Arrays.toString(files));
+                        String[] nonUploadedItem = Arrays.copyOfRange(files, 1, files.length);
+                        // add absolute path
+                        for (int i = 0; i < nonUploadedItem.length; i++) {
+                            nonUploadedItem[i] = downloadPath + "\\" + item + "\\" + nonUploadedItem[i];
+                        }
+                        System.out.println(Arrays.toString(nonUploadedItem));
+                        nonUploadedItems.add(new Item(new java.io.File(downloadPath + "\\" + item + "\\" + item), new ArrayList<>(Arrays.asList(Arrays.copyOfRange(nonUploadedItem, 1, nonUploadedItem.length)))));
+                        System.out.println(nonUploadedItems.size());
+                    }
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        }
+        if (nonUploadedItems.isEmpty()) {
+            sendResponse(update, "Archivos sin subir no detectados");
+            return false;
+        } else {
+            sendResponse(update, "Archivos sin subir detectados, procediendo a subirlos");
+            WallapopService wallapopService = new WallapopService(nonUploadedItems);
+            return true;
+        }
     }
 
     //sale already started
-    public void saleAlreadyStarted(Update update){
+    public void saleAlreadyStarted(Update update) {
         sendResponse(update, "Proceso de venta ya en curso");
     }
 
@@ -47,12 +87,12 @@ public class ItemService {
             String description = message.substring(message.indexOf("Descripcion:") + 12).trim();
 
             //create new directory for the item
-            java.io.File directory = new java.io.File(downloadPath + "\\" + title);
+            java.io.File directory = new java.io.File(downloadPath.getAbsolutePath() + "\\" + title);
             if (directory.mkdir()) {
                 java.io.File file = new java.io.File(directory.getPath() + "\\" + title);
                 try {
                     FileWriter writer = new FileWriter(file);
-                    writer.write(title + "\n" + description);
+                    writer.write(title + "\n" + description + "\nsinSubir");
                     writer.close();
                 } catch (IOException e) {
                     throw new RuntimeException(e);
@@ -71,7 +111,7 @@ public class ItemService {
     }
 
     // verify images
-    public void processImages(Update update, Boolean status){
+    public void processImages(Update update, Boolean status) {
         if (status) {
             var photos = update.getMessage().getPhoto();
             var photo = photos.getLast();  // Última imagen de mayor tamaño
@@ -94,20 +134,23 @@ public class ItemService {
                 sendResponse(update, "Hubo un problema al descargar la imagen. Inténtalo nuevamente.");
             }
         } else {
-           sendResponse(update, "Añade imagenes");
+            sendResponse(update, "Añade imagenes");
         }
     }
 
     // process next item
     public void nextItem(Update update) {
         imageCounter = 1;
-        sendResponse(update, "Añadre otro articulo");
+        sendResponse(update, """
+                Añadre otro articulo:
+                Titulo: xxxx
+                Descripcion: xxxx""");
     }
 
     //finish processing items
     public void finishSale(Update update) {
         imageCounter = 1;
-        sendResponse( update, "Correcto, se van a subir " + items.size() + " articulos");
+        sendResponse(update, "Correcto, se van a subir " + items.size() + " articulos");
         WallapopService wallapopService = new WallapopService(items);
         items.clear();
     }
