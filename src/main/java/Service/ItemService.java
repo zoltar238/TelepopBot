@@ -43,7 +43,7 @@ public class ItemService {
         //if item list is not empty check for non uploaded items
         if (items != null) {
             for (String item : items) {
-                try (BufferedReader br = new BufferedReader(new FileReader(downloadPath + "\\" + item + "\\" + item))){
+                try (BufferedReader br = new BufferedReader(new FileReader(downloadPath + "\\" + item + "\\" + item))) {
                     br.readLine();
                     br.readLine();
                     String status = br.readLine();
@@ -70,7 +70,7 @@ public class ItemService {
             return false;
         } else {
             sendResponse(update, "Archivos sin subir detectados, procediendo a subirlos");
-            WallapopService wallapopService = new WallapopService(nonUploadedItems);
+            //WallapopService wallapopService = new WallapopService(nonUploadedItems);
             return true;
         }
     }
@@ -111,12 +111,11 @@ public class ItemService {
     }
 
     // verify images
-    public void processImages(Update update, Boolean status) {
-        if (status) {
+    public void processImages(Update update, String status) {
+        if (status.equals("correctInfo")) {
             var photos = update.getMessage().getPhoto();
             var photo = photos.getLast();  // Última imagen de mayor tamaño
             var fileId = photo.getFileId();
-
             try {
                 // get image URL
                 GetFile getFileMethod = new GetFile(fileId);
@@ -133,26 +132,36 @@ public class ItemService {
                 e.printStackTrace();
                 sendResponse(update, "Hubo un problema al descargar la imagen. Inténtalo nuevamente.");
             }
+        } else if (status.equals("incorrectInfo")) {
+            sendResponse(update, "Todavia no has añadido informacion");
         } else {
             sendResponse(update, "Añade imagenes");
         }
     }
 
     // process next item
-    public void nextItem(Update update) {
-        imageCounter = 1;
-        sendResponse(update, """
-                Añadre otro articulo:
-                Titulo: xxxx
-                Descripcion: xxxx""");
+    public void nextItem(Update update, String status) {
+        if (status.equals("imagesUploaded")) {
+            imageCounter = 1;
+            sendResponse(update, """
+                    Añadre otro articulo:
+                    Titulo: xxxx
+                    Descripcion: xxxx""");
+        } else if (status.equals("imagesNotUploaded")) {
+            sendResponse(update, "No se han enviado imagenes");
+        }
     }
 
     //finish processing items
-    public void finishSale(Update update) {
-        imageCounter = 1;
-        sendResponse(update, "Correcto, se van a subir " + items.size() + " articulos");
-        WallapopService wallapopService = new WallapopService(items);
-        items.clear();
+    public void finishSale(Update update, String status) {
+        if (status.equals("imagesUploaded")) {
+            imageCounter = 1;
+            sendResponse(update, "Correcto, se van a subir " + items.size() + " articulos");
+            //WallapopService wallapopService = new WallapopService(items);
+            items.clear();
+        } else if (status.equals("imagesNotUploaded")) {
+            sendResponse(update, "No se han enviado imagenes");
+        }
     }
 
     // respond to client
@@ -183,5 +192,9 @@ public class ItemService {
         out.close();
     }
 
-
+    //method for closing the program
+    public void endProgram(Update update) {
+        sendResponse(update, "Cerrando el programa");
+        System.exit(0);
+    }
 }
