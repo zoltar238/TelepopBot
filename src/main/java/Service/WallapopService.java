@@ -176,8 +176,8 @@ public class WallapopService {
 
     private String[] extractHashTags(){
         try {
-            // read entire file and return array of hashtags
-            List<String> lines = Files.readAllLines(Paths.get("src/main/resources/hashtags"));
+            // read entire file and return array of hashtags.txt
+            List<String> lines = Files.readAllLines(Paths.get("src/main/resources/hashtags.txt"));
             return lines.toArray(new String[0]);
         } catch (IOException e) {
             throw new RuntimeException(e);
