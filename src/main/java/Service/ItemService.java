@@ -1,5 +1,6 @@
 package Service;
 
+import DAO.ItemDAOImplementation;
 import entity.Item;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.GetFile;
@@ -17,6 +18,7 @@ import java.util.Objects;
 import static Config.BotConfig.properties;
 
 public class ItemService {
+    private final ItemDAOImplementation itemImp = new ItemDAOImplementation();
     private final ArrayList<Item> items = new ArrayList<>();
     private String title;
     private final java.io.File downloadPath = new java.io.File(properties.getProperty("DownloadPath"));
@@ -43,7 +45,8 @@ public class ItemService {
         //if item list is not empty check for non uploaded items
         if (items != null) {
             for (String item : items) {
-                try (BufferedReader br = new BufferedReader(new FileReader(downloadPath + "\\" + item + "\\" + item))) {
+                String pathnameInfoFile = downloadPath + "\\" + item + "\\" + item + ".txt";
+                try (BufferedReader br = new BufferedReader(new FileReader(pathnameInfoFile))) {
                     br.readLine();
                     br.readLine();
                     String status = br.readLine();
@@ -51,14 +54,13 @@ public class ItemService {
                         // get all files inside directory except for the first
                         String[] files = Objects.requireNonNull(new java.io.File(downloadPath + "\\" + item).list());
                         System.out.println(Arrays.toString(files));
-                        String[] nonUploadedItem = Arrays.copyOfRange(files, 1, files.length);
+                        String[] nonUploadedImages = Arrays.copyOfRange(files, 1, files.length);
                         // add absolute path
-                        for (int i = 0; i < nonUploadedItem.length; i++) {
-                            nonUploadedItem[i] = downloadPath + "\\" + item + "\\" + nonUploadedItem[i];
+                        for (int i = 0; i < nonUploadedImages.length; i++) {
+                            nonUploadedImages[i] = downloadPath + "\\" + item + "\\" + nonUploadedImages[i];
                         }
-                        System.out.println(Arrays.toString(nonUploadedItem));
-                        nonUploadedItems.add(new Item(new java.io.File(downloadPath + "\\" + item + "\\" + item), new ArrayList<>(Arrays.asList(Arrays.copyOfRange(nonUploadedItem, 1, nonUploadedItem.length)))));
-                        System.out.println(nonUploadedItems.size());
+                        System.out.println(Arrays.toString(nonUploadedImages));
+                        nonUploadedItems.add(new Item(new java.io.File(pathnameInfoFile), new ArrayList<>(Arrays.asList(nonUploadedImages))));
                     }
                 } catch (IOException e) {
                     throw new RuntimeException(e);
@@ -70,7 +72,7 @@ public class ItemService {
             return false;
         } else {
             sendResponse(update, "Archivos sin subir detectados, procediendo a subirlos");
-            //WallapopService wallapopService = new WallapopService(nonUploadedItems);
+            WallapopService wallapopService = new WallapopService(nonUploadedItems);
             return true;
         }
     }
@@ -83,20 +85,16 @@ public class ItemService {
     //verify article info
     public Boolean processInfo(Update update, String message) {
         if (message.contains("Titulo:") && message.contains("Descripcion:")) {
+            //extract title and description from message
+            //todo: change spaces for _ in file name
             title = message.substring(message.indexOf("Titulo:") + 7, message.indexOf("Descripcion:")).trim();
             String description = message.substring(message.indexOf("Descripcion:") + 12).trim();
 
             //create new directory for the item
             java.io.File directory = new java.io.File(downloadPath.getAbsolutePath() + "\\" + title);
             if (directory.mkdir()) {
-                java.io.File file = new java.io.File(directory.getPath() + "\\" + title);
-                try {
-                    FileWriter writer = new FileWriter(file);
-                    writer.write(title + "\n" + description + "\nsinSubir");
-                    writer.close();
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
+                java.io.File file = new java.io.File(directory.getPath() + "\\" + title + ".txt");
+                itemImp.writeInfoFile(file, title, description);
                 items.add(new Item(file));
                 sendResponse(update, "Información recibida, envía imagen/es.");
                 return true;
@@ -114,7 +112,7 @@ public class ItemService {
     public void processImages(Update update, String status) {
         if (status.equals("correctInfo")) {
             var photos = update.getMessage().getPhoto();
-            var photo = photos.getLast();  // Última imagen de mayor tamaño
+            var photo = photos.getLast();
             var fileId = photo.getFileId();
             try {
                 // get image URL
@@ -124,7 +122,9 @@ public class ItemService {
 
                 // download image
                 String path = downloadPath + "\\" + title + "\\" + title + imageCounter + ".jpg";
+                // add image to
                 items.getLast().addPath(path);
+                System.out.println(path);
                 downloadImage(fileUrl, path);
                 sendResponse(update, "Imagen " + imageCounter + " descargada correctamente");
                 imageCounter++;
@@ -157,7 +157,7 @@ public class ItemService {
         if (status.equals("imagesUploaded")) {
             imageCounter = 1;
             sendResponse(update, "Correcto, se van a subir " + items.size() + " articulos");
-            //WallapopService wallapopService = new WallapopService(items);
+            WallapopService wallapopService = new WallapopService(items);
             items.clear();
         } else if (status.equals("imagesNotUploaded")) {
             sendResponse(update, "No se han enviado imagenes");

@@ -11,15 +11,15 @@ import java.util.ArrayList;
 @Setter
 @Data
 public class Item {
-    private File file;
+    private File infoFile;
     private ArrayList<String> paths = new ArrayList<>();
 
-    public Item(File file){
-        this.file = file;
+    public Item(File infoFile){
+        this.infoFile = infoFile;
     }
 
-    public Item(File file, ArrayList<String> paths){
-        this.file = file;
+    public Item(File infoFile, ArrayList<String> paths){
+        this.infoFile = infoFile;
         this.paths = paths;
     }
 
@@ -28,8 +28,8 @@ public class Item {
     }
 
     public void renameFile(File tempFile){
-        this.file.delete();
-        tempFile.renameTo(this.file);
+        this.infoFile.delete();
+        tempFile.renameTo(this.infoFile);
     }
 
 }

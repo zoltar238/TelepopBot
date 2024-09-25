@@ -1,5 +1,6 @@
 package Service;
 
+import DAO.ItemDAOImplementation;
 import entity.Item;
 import org.openqa.selenium.*;
 import org.openqa.selenium.chrome.ChromeDriver;
@@ -19,6 +20,7 @@ import java.util.ArrayList;
 import static Config.BotConfig.properties;
 
 public class WallapopService {
+    private final ItemDAOImplementation itemImp = new ItemDAOImplementation();
     private WebDriver driver;
     private final JavascriptExecutor js;
 
@@ -28,22 +30,9 @@ public class WallapopService {
         driver.manage().window().maximize();
 
         for (Item item : items) {
-            addItemToSale(item.getFile(), item.getPaths());
-            //set file status to submited
-            String modifiedInfo = "";
-            try (BufferedReader br = new BufferedReader(new FileReader(item.getFile()))){
-                modifiedInfo = br.readLine() + "\n" + br.readLine() + "\n" + "subido";
-            } catch (IOException e){
-                e.printStackTrace();
-            }
-            File tempFile = new File(item.getFile().getAbsolutePath() + "Temp");
-            try (FileWriter fr = new FileWriter(tempFile)){
-                fr.write(modifiedInfo);
-            } catch (IOException e){
-                e.printStackTrace();
-            }
-
-            item.renameFile(tempFile);
+            addItemToSale(item.getInfoFile(), item.getPaths());
+            //set file status to submitted
+            itemImp.modifyInfoFile(item);
         }
 
         cleanup();
@@ -77,18 +66,8 @@ public class WallapopService {
     }
 
     private void addItemToSale(File file, ArrayList<String> paths) {
-        String title;
-        String description;
-
-        try {
-            // Read title and description from file
-            BufferedReader br = new BufferedReader(new FileReader(file));
-            title = br.readLine();
-            description = br.readLine();
-            br.close();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        //read info file
+        String[] info = itemImp.readInfoFile(file); //{title, description}
 
         driver.get("https://es.wallapop.com/");
         WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(1));
@@ -96,7 +75,7 @@ public class WallapopService {
         clickButton(wait, "//a[text()='Vender']", "Vender encontrado", "Vender no encontrado");
         clickButton(wait, "//span[text()='Algo que ya no necesito']", "Súbelo encontrado", "Súbelo no encontrado");
 
-        fillForm(wait, title, description, paths);
+        fillForm(wait, info[0], info[1], paths);
     }
 
     private void fillForm(WebDriverWait wait, String title, String description, ArrayList<String> paths) {
@@ -186,9 +165,17 @@ public class WallapopService {
 
     private void uploadImages(WebDriverWait wait, ArrayList<String> paths) {
         try {
-            WebElement fileInput = (WebElement) js.executeScript("return document.querySelector('.DropArea__wrapper input')");
-            String resultPaths = String.join("\n", paths);
-            fileInput.sendKeys(resultPaths);
+            System.out.println(paths.size());
+            //WebElement fileInput = (WebElement) js.executeScript("return document.querySelector('.DropArea__wrapper input')");
+            for (String path : paths) {
+                WebElement fileInput = (WebElement) js.executeScript("return document.querySelector('.DropArea__wrapper input')");
+
+                System.out.println("Uploading: " + path);
+                fileInput.sendKeys(path);
+
+                // Dependiendo del comportamiento de la web, es posible que necesites un pequeño delay entre envíos
+                Thread.sleep(500); // Añadir un pequeño delay de medio segundo
+            }
         } catch (Exception e) {
             System.out.println("Error uploading images");
         }
@@ -198,6 +185,7 @@ public class WallapopService {
         try {
             WebElement submitButton = (WebElement) js.executeScript("return document.querySelectorAll('.col-12.col-md-6')[4]");
             submitButton.click();
+            Thread.sleep(2000);
         } catch (Exception e) {
             System.out.println("Error submitting product");
         }
