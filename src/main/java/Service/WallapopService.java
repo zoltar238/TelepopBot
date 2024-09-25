@@ -14,8 +14,11 @@ import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.List;
 
 import static Config.BotConfig.properties;
 
@@ -25,8 +28,14 @@ public class WallapopService {
     private final JavascriptExecutor js;
 
     public WallapopService(ArrayList<Item> items) {
+        //detect if chrome is open and kill it
+        if (properties.getProperty("KillChrome").equals("true")) {
+            detectedChromeInstance();
+        }
+        //initialize web driver
         initializeWebDriver();
         js = (JavascriptExecutor) driver;
+        //maximize browser window
         driver.manage().window().maximize();
 
         for (Item item : items) {
@@ -34,8 +43,10 @@ public class WallapopService {
             //set file status to submitted
             itemImp.modifyInfoFile(item);
         }
-
-        cleanup();
+        //close chrome after all items have been submitted
+        if (properties.getProperty("CleanUp").equals("true")) {
+            cleanup();
+        }
     }
 
     private void initializeWebDriver() {
@@ -146,7 +157,7 @@ public class WallapopService {
     }
 
     private void selectHashtags(WebDriverWait wait) {
-        String[] hashTags = {"FigurasPersonalizadas", "Impresion3D", "Modelos3D", "Resina", "Arte3D"};
+        String[] hashTags = extractHashTags();
         try {
             WebElement body = wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//tsl-multi-select-form[@class='HashtagField__suggested__multiselect ng-untouched ng-pristine ng-valid']")));
             WebElement placeHolder = wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("input[placeholder='Buscar o crear hashtag']")));
@@ -163,18 +174,26 @@ public class WallapopService {
         }
     }
 
+    private String[] extractHashTags(){
+        try {
+            // read entire file and return array of hashtags
+            List<String> lines = Files.readAllLines(Paths.get("src/main/resources/hashtags"));
+            return lines.toArray(new String[0]);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     private void uploadImages(WebDriverWait wait, ArrayList<String> paths) {
         try {
             System.out.println(paths.size());
-            //WebElement fileInput = (WebElement) js.executeScript("return document.querySelector('.DropArea__wrapper input')");
             for (String path : paths) {
                 WebElement fileInput = (WebElement) js.executeScript("return document.querySelector('.DropArea__wrapper input')");
 
                 System.out.println("Uploading: " + path);
                 fileInput.sendKeys(path);
-
-                // Dependiendo del comportamiento de la web, es posible que necesites un pequeño delay entre envíos
-                Thread.sleep(500); // Añadir un pequeño delay de medio segundo
+                //delay between image uploaded
+                Thread.sleep(Long.parseLong(properties.getProperty("ImageUploadWaitTime")));
             }
         } catch (Exception e) {
             System.out.println("Error uploading images");
@@ -185,7 +204,7 @@ public class WallapopService {
         try {
             WebElement submitButton = (WebElement) js.executeScript("return document.querySelectorAll('.col-12.col-md-6')[4]");
             submitButton.click();
-            Thread.sleep(2000);
+            Thread.sleep(Long.parseLong(properties.getProperty("ItemUploadWaitTime")));
         } catch (Exception e) {
             System.out.println("Error submitting product");
         }
@@ -193,10 +212,30 @@ public class WallapopService {
 
     private void cleanup() {
         try {
-            Thread.sleep(3500);
+            Thread.sleep(Long.parseLong(properties.getProperty("CleanUpWaitTime")));
             driver.quit();
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    //detect chrome instance and kill it
+    private void detectedChromeInstance(){
+        String processName = "chrome.exe";
+        try {
+            // execute tasklist in search for Chrome
+            Process process = Runtime.getRuntime().exec("tasklist");
+            BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+            // kill chrome if found
+            String line;
+            while ((line = reader.readLine()) != null) {
+                if (line.toLowerCase().contains(processName.toLowerCase())) {
+                    Runtime.getRuntime().exec("taskkill /F /IM chrome.exe");
+                    break;
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 }
