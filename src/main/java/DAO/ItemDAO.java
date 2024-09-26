@@ -1,6 +1,6 @@
 package DAO;
 
-import entity.Item;
+import Model.Item;
 
 import java.io.File;
 

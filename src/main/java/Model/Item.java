@@ -1,4 +1,4 @@
-package entity;
+package Model;
 
 import lombok.Data;
 import lombok.Getter;

@@ -1,7 +1,7 @@
 package Service;
 
 import DAO.ItemDAOImplementation;
-import entity.Item;
+import Model.Item;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.GetFile;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -24,10 +24,21 @@ public class ItemService {
     private final java.io.File downloadPath = new java.io.File(properties.getProperty("DownloadPath"));
     private int imageCounter = 1;
     private final TelegramLongPollingBot bot;
+    private String descriptionSuffix = "";
 
     // Constructor
     public ItemService(TelegramLongPollingBot bot) {
         this.bot = bot;
+        // extract description suffix from file
+        try (BufferedReader br = new BufferedReader(new FileReader("src/main/resources/description.txt"))) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                descriptionSuffix += "\n" + line.trim();
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        System.out.println(descriptionSuffix);
     }
 
     //sale start
@@ -38,6 +49,7 @@ public class ItemService {
                  Descripcion: xxxx""");
     }
 
+    //search for non uploaded items and upload them if they are found
     public Boolean scanNonUploadedItems(Update update) {
         sendResponse(update, "Escaneando articulos sin subir");
         String[] items = downloadPath.list();
@@ -88,16 +100,23 @@ public class ItemService {
             //extract title and description from message
             //todo: change spaces for _ in file name
             title = message.substring(message.indexOf("Titulo:") + 7, message.indexOf("Descripcion:")).trim();
-            String description = message.substring(message.indexOf("Descripcion:") + 12).trim();
-
+            String description = message.substring(message.indexOf("Descripcion:") + 12).trim() + descriptionSuffix;
             //create new directory for the item
             java.io.File directory = new java.io.File(downloadPath.getAbsolutePath() + "\\" + title);
-            if (directory.mkdir()) {
-                java.io.File file = new java.io.File(directory.getPath() + "\\" + title + ".txt");
-                itemImp.writeInfoFile(file, title, description);
-                items.add(new Item(file));
-                sendResponse(update, "Información recibida, envía imagen/es.");
-                return true;
+            if (!directory.exists()){
+                //verify if description size is correct
+                if (description.length() > 640) {
+                    int lengthDiff = description.length() - 640;
+                    sendResponse(update, "La descripcion supera en " + lengthDiff + " los caracteres permitidos");
+                    return false;
+                } else {
+                    directory.mkdir();
+                    java.io.File file = new java.io.File(directory.getPath() + "\\" + title + ".txt");
+                    itemImp.writeInfoFile(file, title, description);
+                    items.add(new Item(file));
+                    sendResponse(update, "Información recibida, envía imagen/es.");
+                    return true;
+                }
             } else {
                 sendResponse(update, "Ya tienes un articulo con el mismo titulo");
                 return false;

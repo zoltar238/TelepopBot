@@ -43,7 +43,7 @@ public class TelegramController extends TelegramLongPollingBot {
                 //check if message contains text
             } else if (update.getMessage().hasText()) {
                 //get message
-                String message = update.getMessage().getText();
+                String message = update.getMessage().getText().trim();
                 // end the app
                 if (!saleProcess && !correctInfo && !imageUploaded && message.equals("/apagar")){
                     itemService.endProgram(update);

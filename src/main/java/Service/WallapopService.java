@@ -1,7 +1,7 @@
 package Service;
 
 import DAO.ItemDAOImplementation;
-import entity.Item;
+import Model.Item;
 import org.openqa.selenium.*;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
@@ -81,7 +81,7 @@ public class WallapopService {
         String[] info = itemImp.readInfoFile(file); //{title, description}
 
         driver.get("https://es.wallapop.com/");
-        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(1));
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
 
         clickButton(wait, "//a[text()='Vender']", "Vender encontrado", "Vender no encontrado");
         clickButton(wait, "//span[text()='Algo que ya no necesito']", "Súbelo encontrado", "Súbelo no encontrado");
@@ -186,11 +186,11 @@ public class WallapopService {
 
     private void uploadImages(WebDriverWait wait, ArrayList<String> paths) {
         try {
-            System.out.println(paths.size());
             for (String path : paths) {
+
                 WebElement fileInput = (WebElement) js.executeScript("return document.querySelector('.DropArea__wrapper input')");
 
-                System.out.println("Uploading: " + path);
+                //System.out.println("Uploading: " + path);
                 fileInput.sendKeys(path);
                 //delay between image uploaded
                 Thread.sleep(Long.parseLong(properties.getProperty("ImageUploadWaitTime")));
