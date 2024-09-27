@@ -38,7 +38,6 @@ public class ItemService {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        System.out.println(descriptionSuffix);
     }
 
     //sale start
@@ -58,24 +57,18 @@ public class ItemService {
         if (items != null) {
             for (String item : items) {
                 String pathnameInfoFile = downloadPath + "\\" + item + "\\" + item + ".txt";
-                try (BufferedReader br = new BufferedReader(new FileReader(pathnameInfoFile))) {
-                    br.readLine();
-                    br.readLine();
-                    String status = br.readLine();
-                    if (status.equals("sinSubir")) {
-                        // get all files inside directory except for the first
-                        String[] files = Objects.requireNonNull(new java.io.File(downloadPath + "\\" + item).list());
-                        System.out.println(Arrays.toString(files));
-                        String[] nonUploadedImages = Arrays.copyOfRange(files, 1, files.length);
-                        // add absolute path
-                        for (int i = 0; i < nonUploadedImages.length; i++) {
-                            nonUploadedImages[i] = downloadPath + "\\" + item + "\\" + nonUploadedImages[i];
-                        }
-                        System.out.println(Arrays.toString(nonUploadedImages));
-                        nonUploadedItems.add(new Item(new java.io.File(pathnameInfoFile), new ArrayList<>(Arrays.asList(nonUploadedImages))));
+                String status = itemImp.readStatus(new java.io.File(pathnameInfoFile));
+                if (status.equals("sinSubir")) {
+                    // get all files inside directory except for the first
+                    String[] files = Objects.requireNonNull(new java.io.File(downloadPath + "\\" + item).list());
+                    System.out.println(Arrays.toString(files));
+                    String[] nonUploadedImages = Arrays.copyOfRange(files, 1, files.length);
+                    // add absolute path
+                    for (int i = 0; i < nonUploadedImages.length; i++) {
+                        nonUploadedImages[i] = downloadPath + "\\" + item + "\\" + nonUploadedImages[i];
                     }
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
+                    System.out.println(Arrays.toString(nonUploadedImages));
+                    nonUploadedItems.add(new Item(new java.io.File(pathnameInfoFile), new ArrayList<>(Arrays.asList(nonUploadedImages))));
                 }
             }
         }
@@ -101,9 +94,10 @@ public class ItemService {
             //todo: change spaces for _ in file name
             title = message.substring(message.indexOf("Titulo:") + 7, message.indexOf("Descripcion:")).trim();
             String description = message.substring(message.indexOf("Descripcion:") + 12).trim() + descriptionSuffix;
+            System.out.println(description);
             //create new directory for the item
             java.io.File directory = new java.io.File(downloadPath.getAbsolutePath() + "\\" + title);
-            if (!directory.exists()){
+            if (!directory.exists()) {
                 //verify if description size is correct
                 if (description.length() > 640) {
                     int lengthDiff = description.length() - 640;

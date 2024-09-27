@@ -190,7 +190,6 @@ public class WallapopService {
 
                 WebElement fileInput = (WebElement) js.executeScript("return document.querySelector('.DropArea__wrapper input')");
 
-                //System.out.println("Uploading: " + path);
                 fileInput.sendKeys(path);
                 //delay between image uploaded
                 Thread.sleep(Long.parseLong(properties.getProperty("ImageUploadWaitTime")));

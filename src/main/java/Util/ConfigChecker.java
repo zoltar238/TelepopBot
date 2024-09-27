@@ -6,19 +6,11 @@ import java.io.*;
 
 import static Config.BotConfig.properties;
 
-public class ConfigurationChecker {
-
-    public ConfigurationChecker() {
-        ConfigCheckEnum ConfigCheckEnum = checkDownloadPath();
-        System.out.println(checkDownloadPath().toString());
-        System.out.println(checkUserData().toString());
-        System.out.println(checkHashtags().toString());
-    }
+public class ConfigChecker {
 
     //check configuration path
-    private ConfigCheckEnum checkDownloadPath() {
-        String downloadPath = properties.getProperty("DownloadPath");
-        File downloadDirectory = new File(downloadPath);
+    public static ConfigCheckEnum checkDownloadPath() {
+        File downloadDirectory = new File(properties.getProperty("DownloadPath"));
         // check if it exists
         if (downloadDirectory.exists()) {
             if (downloadDirectory.isDirectory()) {
@@ -50,7 +42,7 @@ public class ConfigurationChecker {
     }
 
     //check user data
-    private ConfigCheckEnum checkUserData(){
+    public static ConfigCheckEnum checkUserData(){
         if (properties.getProperty("UserData").equals(System.getProperty("user.home")+ "\\AppData\\Local\\Google\\Chrome\\User Data")){
             return ConfigCheckEnum.USERDATA_PATH_OK;
         } else {
@@ -58,8 +50,8 @@ public class ConfigurationChecker {
         }
     }
 
-    //check hashtags are 5 or less and dont contain the # symnol
-    private ConfigCheckEnum checkHashtags(){
+    //check hashtags are 5 or less and don't contain the # symbol
+    public static ConfigCheckEnum checkHashtags(){
         int lineCounter = 0;
         try (BufferedReader reader = new BufferedReader(new FileReader("src/main/resources/hashtags.txt"))) {
             String line;
@@ -78,4 +70,6 @@ public class ConfigurationChecker {
             return ConfigCheckEnum.HASTAGS_EXCEED_MAX;
         }
     }
+
+    //todo: write check for the rest of the elements
 }
