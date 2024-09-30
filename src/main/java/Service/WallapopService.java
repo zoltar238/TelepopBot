@@ -2,7 +2,8 @@ package Service;
 
 import DAO.ItemDAOImplementation;
 import Model.Item;
-import org.openqa.selenium.*;
+import Model.Page.WallapopUploadPage;
+import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.edge.EdgeDriver;
@@ -10,10 +11,12 @@ import org.openqa.selenium.edge.EdgeOptions;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.firefox.FirefoxOptions;
 import org.openqa.selenium.firefox.FirefoxProfile;
-import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.Duration;
@@ -23,23 +26,46 @@ import java.util.List;
 import static Config.BotConfig.properties;
 
 public class WallapopService {
-    private final ItemDAOImplementation itemImp = new ItemDAOImplementation();
     private WebDriver driver;
-    private final JavascriptExecutor js;
+    private final ItemDAOImplementation itemImp = new ItemDAOImplementation();
+    private WallapopUploadPage wallaUpload;
 
-    public WallapopService(ArrayList<Item> items) {
+    public WallapopService(){
+        //element wait time
+    }
+
+    //start sales process
+    public void startSale(ArrayList<Item> items){
+        String[] hashTags = extractHashTags();
         //detect if chrome is open and kill it
         if (properties.getProperty("KillChrome").equals("true")) {
             detectedChromeInstance();
         }
         //initialize web driver
         initializeWebDriver();
-        js = (JavascriptExecutor) driver;
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+        wallaUpload = new WallapopUploadPage(driver, wait);
         //maximize browser window
         driver.manage().window().maximize();
-
         for (Item item : items) {
-            addItemToSale(item.getInfoFile(), item.getPaths());
+            //load upload page
+            driver.get("https://es.wallapop.com/app/catalog/upload");
+            //read info file
+            String[] info = itemImp.readInfoFile(item.getInfoFile()); //{title, description}
+            wallaUpload.selectProductType();
+            wallaUpload.enterTitle(info[0]);
+            wallaUpload.selectCategory();
+            wallaUpload.enterPrice();
+            wallaUpload.enterDescription(info[1]);
+            wallaUpload.selectCondition();
+            wallaUpload.enterHashTags(hashTags);
+            wallaUpload.uploadImages(item.getPaths());
+            wallaUpload.submit();
+            try {
+                Thread.sleep(Long.parseLong(properties.getProperty("ItemUploadWaitTime")));
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
             //set file status to submitted
             itemImp.modifyInfoFile(item);
         }
@@ -49,6 +75,7 @@ public class WallapopService {
         }
     }
 
+    //initialize web driver
     private void initializeWebDriver() {
         String browser = properties.getProperty("WebDriver");
         switch (browser) {
@@ -76,104 +103,7 @@ public class WallapopService {
         }
     }
 
-    private void addItemToSale(File file, ArrayList<String> paths) {
-        //read info file
-        String[] info = itemImp.readInfoFile(file); //{title, description}
-
-        driver.get("https://es.wallapop.com/");
-        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
-
-        clickButton(wait, "//a[text()='Vender']", "Vender encontrado", "Vender no encontrado");
-        clickButton(wait, "//span[text()='Algo que ya no necesito']", "Súbelo encontrado", "Súbelo no encontrado");
-
-        fillForm(wait, info[0], info[1], paths);
-    }
-
-    private void fillForm(WebDriverWait wait, String title, String description, ArrayList<String> paths) {
-        enterText(wait, By.id("title"), title, "Label de texto no encontrado");
-        selectCategory(wait);
-        enterPrice(wait);
-        enterDescription(wait, description);
-        selectCondition(wait);
-        selectHashtags(wait);
-        uploadImages(wait, paths);
-        submitProduct(wait);
-    }
-
-    private void enterText(WebDriverWait wait, By locator, String text, String errorMessage) {
-        try {
-            WebElement textField = wait.until(ExpectedConditions.visibilityOfElementLocated(locator));
-            textField.sendKeys(text);
-            textField.sendKeys(Keys.RETURN);
-        } catch (TimeoutException e) {
-            System.out.println(errorMessage);
-        }
-    }
-
-    private void clickButton(WebDriverWait wait, String xpath, String successMessage, String errorMessage) {
-        try {
-            WebElement button = wait.until(ExpectedConditions.elementToBeClickable(By.xpath(xpath)));
-            button.click();
-            System.out.println(successMessage);
-        } catch (TimeoutException e) {
-            System.out.println(errorMessage);
-        }
-    }
-
-    private void selectCategory(WebDriverWait wait) {
-        clickButton(wait, "//label[text()='Categoría y subcategoría']", "Súbelo encontrado", "Seleccion de categoria no encontrado");
-
-        // Selecting category
-        try {
-            WebElement panel1 = (WebElement) js.executeScript("return document.querySelector(\".sc-walla-dropdown-item-h.sc-walla-dropdown-item-s.hydrated:nth-child(11)\");");
-            panel1.click();
-            WebElement panel2 = (WebElement) js.executeScript("return document.querySelector(\".sc-walla-dropdown-item-h.sc-walla-dropdown-item-s.hydrated:nth-child(14)\");");
-            panel2.click();
-        } catch (Exception e) {
-            System.out.println("Error selecting category or subcategory");
-        }
-    }
-
-    private void enterPrice(WebDriverWait wait) {
-        clickButton(wait, "//label[text()='Precio']", "Súbelo encontrado", "Súbelo no encontrado");
-        enterText(wait, By.xpath("//input[@id='sale_price']"), "1", "Precio no encontrado");
-    }
-
-    private void enterDescription(WebDriverWait wait, String description) {
-        clickButton(wait, "//label[text()='Descripción']", "Súbelo encontrado", "Súbelo no encontrado");
-        enterText(wait, By.xpath("//textarea[@id='description']"), description, "Descripción no encontrada");
-    }
-
-    private void selectCondition(WebDriverWait wait) {
-        try {
-            WebElement button = (WebElement) js.executeScript("return document.querySelectorAll('.walla-text-input__label.sc-walla-text-input')[8]");
-            button.click();
-            button = (WebElement) js.executeScript("return document.querySelectorAll('.sc-walla-dropdown-item-h.sc-walla-dropdown-item-s.hydrated')[19]");
-            button.click();
-            System.out.println("Súbelo encontrado");
-        } catch (Exception e) {
-            System.out.println("Súbelo no encontrado");
-        }
-    }
-
-    private void selectHashtags(WebDriverWait wait) {
-        String[] hashTags = extractHashTags();
-        try {
-            WebElement body = wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//tsl-multi-select-form[@class='HashtagField__suggested__multiselect ng-untouched ng-pristine ng-valid']")));
-            WebElement placeHolder = wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("input[placeholder='Buscar o crear hashtag']")));
-
-            for (String hashTag : hashTags) {
-                placeHolder.sendKeys(hashTag);
-                WebElement checkBox = wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector(".Checkbox__mark.d-block.position-relative.m-0")));
-                checkBox.click();
-                body.click();
-            }
-            System.out.println("Súbelo encontrado");
-        } catch (TimeoutException e) {
-            System.out.println("Súbelo no encontrado");
-        }
-    }
-
+    //extract hashtags from file
     private String[] extractHashTags(){
         try {
             // read entire file and return array of hashtags.txt
@@ -184,45 +114,11 @@ public class WallapopService {
         }
     }
 
-    private void uploadImages(WebDriverWait wait, ArrayList<String> paths) {
-        try {
-            for (String path : paths) {
-
-                WebElement fileInput = (WebElement) js.executeScript("return document.querySelector('.DropArea__wrapper input')");
-
-                fileInput.sendKeys(path);
-                //delay between image uploaded
-                Thread.sleep(Long.parseLong(properties.getProperty("ImageUploadWaitTime")));
-            }
-        } catch (Exception e) {
-            System.out.println("Error uploading images");
-        }
-    }
-
-    private void submitProduct(WebDriverWait wait) {
-        try {
-            WebElement submitButton = (WebElement) js.executeScript("return document.querySelectorAll('.col-12.col-md-6')[4]");
-            submitButton.click();
-            Thread.sleep(Long.parseLong(properties.getProperty("ItemUploadWaitTime")));
-        } catch (Exception e) {
-            System.out.println("Error submitting product");
-        }
-    }
-
-    private void cleanup() {
-        try {
-            Thread.sleep(Long.parseLong(properties.getProperty("CleanUpWaitTime")));
-            driver.quit();
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
     //detect chrome instance and kill it
     private void detectedChromeInstance(){
         String processName = "chrome.exe";
         try {
-            // execute tasklist in search for Chrome
+            // execute task list in search for Chrome
             Process process = Runtime.getRuntime().exec("tasklist");
             BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
             // kill chrome if found
@@ -235,6 +131,16 @@ public class WallapopService {
             }
         } catch (IOException e) {
             e.printStackTrace();
+        }
+    }
+
+    //terminate Chrome browser after finishing
+    private void cleanup() {
+        try {
+            Thread.sleep(Long.parseLong(properties.getProperty("CleanUpWaitTime")));
+            driver.quit();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
         }
     }
 }

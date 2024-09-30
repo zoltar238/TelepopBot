@@ -17,8 +17,8 @@ import java.util.Objects;
 
 import static Config.BotConfig.properties;
 
-public class ItemService {
-    private final WallapopServiceTemporal wallaService = new WallapopServiceTemporal();
+public class TelegramService {
+    private final WallapopService wallaService = new WallapopService();
     private final ItemDAOImplementation itemImp = new ItemDAOImplementation();
     private final ArrayList<Item> items = new ArrayList<>();
     private String title;
@@ -28,7 +28,7 @@ public class ItemService {
     private String descriptionSuffix = "";
 
     // Constructor
-    public ItemService(TelegramLongPollingBot bot) {
+    public TelegramService(TelegramLongPollingBot bot) {
         this.bot = bot;
         // extract description suffix from file
         try (BufferedReader br = new BufferedReader(new FileReader("src/main/resources/description.txt"))) {
@@ -62,13 +62,11 @@ public class ItemService {
                 if (status.equals("sinSubir")) {
                     // get all files inside directory except for the first
                     String[] files = Objects.requireNonNull(new java.io.File(downloadPath + "\\" + item).list());
-                    System.out.println(Arrays.toString(files));
                     String[] nonUploadedImages = Arrays.copyOfRange(files, 1, files.length);
                     // add absolute path
                     for (int i = 0; i < nonUploadedImages.length; i++) {
                         nonUploadedImages[i] = downloadPath + "\\" + item + "\\" + nonUploadedImages[i];
                     }
-                    System.out.println(Arrays.toString(nonUploadedImages));
                     nonUploadedItems.add(new Item(new java.io.File(pathnameInfoFile), new ArrayList<>(Arrays.asList(nonUploadedImages))));
                 }
             }
@@ -78,7 +76,6 @@ public class ItemService {
             return false;
         } else {
             sendResponse(update, "Archivos sin subir detectados, procediendo a subirlos");
-            //WallapopService wallapopService = new WallapopService(nonUploadedItems);
             wallaService.startSale(nonUploadedItems);
             return true;
         }
@@ -96,7 +93,6 @@ public class ItemService {
             //todo: change spaces for _ in file name
             title = message.substring(message.indexOf("Titulo:") + 7, message.indexOf("Descripcion:")).trim();
             String description = message.substring(message.indexOf("Descripcion:") + 12).trim() + descriptionSuffix;
-            System.out.println(description);
             //create new directory for the item
             java.io.File directory = new java.io.File(downloadPath.getAbsolutePath() + "\\" + title);
             if (!directory.exists()) {
@@ -139,7 +135,6 @@ public class ItemService {
                 String path = downloadPath + "\\" + title + "\\" + title + imageCounter + ".jpg";
                 // add image to
                 items.getLast().addPath(path);
-                System.out.println(path);
                 downloadImage(fileUrl, path);
                 sendResponse(update, "Imagen " + imageCounter + " descargada correctamente");
                 imageCounter++;
@@ -172,7 +167,6 @@ public class ItemService {
         if (status.equals("imagesUploaded")) {
             imageCounter = 1;
             sendResponse(update, "Correcto, se van a subir " + items.size() + " articulos");
-            //WallapopService wallapopService = new WallapopService(items);
             wallaService.startSale(items);
             items.clear();
         } else if (status.equals("imagesNotUploaded")) {

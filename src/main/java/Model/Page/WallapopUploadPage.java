@@ -6,6 +6,8 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 
 import java.util.ArrayList;
 
+import static Config.BotConfig.properties;
+
 // page_url = https://es.wallapop.com/app/catalog/upload
 public class WallapopUploadPage {
 
@@ -91,7 +93,7 @@ public class WallapopUploadPage {
             fileInput.sendKeys(path);
             //delay between image uploaded
             try {
-                Thread.sleep(500);
+                Thread.sleep(Long.parseLong(properties.getProperty("ImageUploadWaitTime")));
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
