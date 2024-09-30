@@ -18,6 +18,7 @@ import java.util.Objects;
 import static Config.BotConfig.properties;
 
 public class ItemService {
+    private final WallapopServiceTemporal wallaService = new WallapopServiceTemporal();
     private final ItemDAOImplementation itemImp = new ItemDAOImplementation();
     private final ArrayList<Item> items = new ArrayList<>();
     private String title;
@@ -77,7 +78,8 @@ public class ItemService {
             return false;
         } else {
             sendResponse(update, "Archivos sin subir detectados, procediendo a subirlos");
-            WallapopService wallapopService = new WallapopService(nonUploadedItems);
+            //WallapopService wallapopService = new WallapopService(nonUploadedItems);
+            wallaService.startSale(nonUploadedItems);
             return true;
         }
     }
@@ -170,7 +172,8 @@ public class ItemService {
         if (status.equals("imagesUploaded")) {
             imageCounter = 1;
             sendResponse(update, "Correcto, se van a subir " + items.size() + " articulos");
-            WallapopService wallapopService = new WallapopService(items);
+            //WallapopService wallapopService = new WallapopService(items);
+            wallaService.startSale(items);
             items.clear();
         } else if (status.equals("imagesNotUploaded")) {
             sendResponse(update, "No se han enviado imagenes");

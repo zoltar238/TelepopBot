@@ -1,12 +1,10 @@
-package Pages;
+package Model.Page;
 
 import org.openqa.selenium.*;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 import java.util.ArrayList;
-
-import static Config.BotConfig.properties;
 
 // page_url = https://es.wallapop.com/app/catalog/upload
 public class WallapopUploadPage {
@@ -43,7 +41,7 @@ public class WallapopUploadPage {
     }
 
     //select product type
-    public void clickProductType() {
+    public void selectProductType() {
         clickButton(productTypeOption, "Tipo de producto seleccionado correctamente", "No se ha entontrado el boton de tipo de producto");
     }
 
@@ -65,8 +63,8 @@ public class WallapopUploadPage {
     }
 
     //enter description
-    public void enterDescription() {
-        enterText(descriptionInputField, "Description", "Descripción añadida correctamente", "No se pudo añadir la descripción");
+    public void enterDescription(String description) {
+        enterText(descriptionInputField, description, "Descripción añadida correctamente", "No se pudo añadir la descripción");
     }
 
     //select condition
