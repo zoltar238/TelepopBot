@@ -2,6 +2,7 @@ package Service;
 
 import DAO.ItemDAOImplementation;
 import Model.Item;
+import Util.ImageProcessor;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.GetFile;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -14,6 +15,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Objects;
+import java.util.concurrent.*;
 
 import static Config.BotConfig.properties;
 
@@ -21,11 +23,14 @@ public class TelegramService {
     private final WallapopService wallaService = new WallapopService();
     private final ItemDAOImplementation itemImp = new ItemDAOImplementation();
     private final ArrayList<Item> items = new ArrayList<>();
-    private String title;
     private final java.io.File downloadPath = new java.io.File(properties.getProperty("DownloadPath"));
+    private String title;
     private int imageCounter = 1;
     private final TelegramLongPollingBot bot;
     private String descriptionSuffix = "";
+    // implement executor service for background image comparing
+    private final ExecutorService executor = Executors.newFixedThreadPool(6);
+
 
     // Constructor
     public TelegramService(TelegramLongPollingBot bot) {
@@ -138,6 +143,16 @@ public class TelegramService {
                 downloadImage(fileUrl, path);
                 sendResponse(update, "Imagen " + imageCounter + " descargada correctamente");
                 imageCounter++;
+                //compare image
+                ImageProcessor comp = new ImageProcessor();
+
+                // launch a thread to compare images
+                CompletableFuture.supplyAsync(() -> comp.compare(path), executor).thenAccept(result -> {
+                    if (!result.equals("noCoincidence")){
+                        sendResponse(update, result);
+                    }
+                });
+
             } catch (Exception e) {
                 e.printStackTrace();
                 sendResponse(update, "Hubo un problema al descargar la imagen. Inténtalo nuevamente.");
