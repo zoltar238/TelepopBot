@@ -222,4 +222,8 @@ public class TelegramService {
         sendResponse(update, "Cerrando el programa");
         System.exit(0);
     }
+
+    public void ignoreMessage(Update update, int messageCount) {
+        sendResponse(update, "Se ha ingnorado el menssaje numero: " + messageCount);
+    }
 }

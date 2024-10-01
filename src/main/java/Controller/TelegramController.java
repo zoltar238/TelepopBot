@@ -14,6 +14,7 @@ public class TelegramController extends TelegramLongPollingBot {
     public static boolean correctInfo = false;
     public static boolean imageUploaded = false;
     public static boolean nonUploadedItems = true;
+    public int messageCount = 1;
 
     public TelegramController() {
         telegramService = new TelegramService(this);
@@ -32,8 +33,13 @@ public class TelegramController extends TelegramLongPollingBot {
     @Override
     public void onUpdateReceived(Update update) {
         if (update.hasMessage()) {
+            //ignore first messages
+            if (messageCount <=  Integer.parseInt(properties.getProperty("MessagesIgnored"))) {
+                telegramService.ignoreMessage(update, messageCount);
+                messageCount ++;
+            }
             //check if message contains image
-            if (update.getMessage().hasPhoto()) {
+            else if (update.getMessage().hasPhoto()) {
                 if (correctInfo) {
                     telegramService.processImages(update, "correctInfo");
                     imageUploaded = true;
