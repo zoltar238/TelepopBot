@@ -119,12 +119,15 @@ public class WallapopUploadPage {
 
     // method for clicking buttons
     private void clickButton(By locator, String successMessage, String errorMessage) {
-        try {
-            WebElement button = wait.until(ExpectedConditions.elementToBeClickable(locator));
-            button.click();
-            System.out.println(successMessage);
-        } catch (TimeoutException e) {
-            System.out.println(errorMessage);
+        for (int attempts = 0; attempts < 3; attempts++) {
+            try {
+                WebElement button = wait.until(ExpectedConditions.elementToBeClickable(locator));
+                button.click();
+                System.out.println(successMessage);
+                return;
+            } catch (TimeoutException e) {
+                System.err.println(errorMessage + " Attempt: " + (attempts + 1));
+            }
         }
     }
 
