@@ -14,6 +14,8 @@ public class BadConfigView extends JFrame {
         setSize(400, 300);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
+        setIconImage(new ImageIcon("src/main/resources/cow.png").getImage());
+
 
         // gridbaglayout config
         JPanel listPane = new JPanel(new GridBagLayout());
