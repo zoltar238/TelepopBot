@@ -15,6 +15,7 @@ public class TelegramController extends TelegramLongPollingBot {
     public static boolean imageUploaded = false;
     public static boolean nonUploadedItems = true;
     public int messageCount = 1;
+    public String saleType = "";
 
     public TelegramController() {
         telegramService = new TelegramService(this);
@@ -54,31 +55,37 @@ public class TelegramController extends TelegramLongPollingBot {
                 if (!saleProcess && !correctInfo && !imageUploaded && message.equals("/apagar")){
                     telegramService.endProgram(update);
                     // if sales process hasn't started, check for command /venta to start procces
-                } else if (!saleProcess && message.equals("/venta")) {
+                } else if (!saleProcess && (message.equals("/ventafull") || message.equals("/ventatitulo"))) {
                     //when starting the bot, check for non uploaded items, if they exist, upload them
                     if (nonUploadedItems){
                         nonUploadedItems = telegramService.scanNonUploadedItems(update);
                     //after uploading all non uploaded item, or no non uploaded items detected, start sales process
                     } if (!nonUploadedItems){
-                        telegramService.startSale(update);
+                        //determine sale type
+                        if (message.equals("/ventafull")){
+                            saleType = "full";
+                        } else {
+                            saleType = "title";
+                        }
+                        telegramService.startSale(update, saleType);
                         saleProcess = true;
                     }
                 //if sales process has started, and command /venta is imputed, send warning message
-                } else if (saleProcess && message.equals("/venta")) {
+                } else if (saleProcess && (message.equals("/ventafull") || message.equals("/ventatitulo"))) {
                     telegramService.saleAlreadyStarted(update);
                 //if sales process has started, and info is not correct, check if info is correct
                 } else if (saleProcess && !correctInfo) {
-                    correctInfo = telegramService.processInfo(update, message);
+                    correctInfo = telegramService.processInfo(update, message, saleType);
                 } else if (correctInfo) {
                     // add new item with /siguiente
                     if (message.equals("/siguiente")) {
                         //check if images where uploaded successfully
                         if (!imageUploaded){
-                            telegramService.nextItem(update, "imagesNotUploaded");
+                            telegramService.nextItem(update, "imagesNotUploaded", saleType);
                         } else {
                             correctInfo = false;
                             imageUploaded = false;
-                            telegramService.nextItem(update, "imagesUploaded");
+                            telegramService.nextItem(update, "imagesUploaded", saleType);
                         }
                     //end sales process with /finventa
                     } else if (message.equals("/finventa")) {
@@ -89,6 +96,7 @@ public class TelegramController extends TelegramLongPollingBot {
                             correctInfo = false;
                             saleProcess = false;
                             imageUploaded = false;
+                            saleType = "";
                             telegramService.finishSale(update, "imagesUploaded");
                         }
                     } else {

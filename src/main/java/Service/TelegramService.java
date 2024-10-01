@@ -47,11 +47,15 @@ public class TelegramService {
     }
 
     //sale start
-    public void startSale(Update update) {
-        sendResponse(update, """
+    public void startSale(Update update, String type) {
+        if (type.equals("full")) {
+            sendResponse(update, """
                 Escribe título y descripción siguiendo el siguiente formato:
-                 Titulo: xxxx
-                 Descripcion: xxxx""");
+                 Titulo:
+                 Descripcion:""");
+        } else if (type.equals("title")) {
+            sendResponse(update, "Escribe el título");
+        }
     }
 
     //search for non uploaded items and upload them if they are found
@@ -92,34 +96,48 @@ public class TelegramService {
     }
 
     //verify article info
-    public Boolean processInfo(Update update, String message) {
-        if (message.contains("Titulo:") && message.contains("Descripcion:")) {
-            //extract title and description from message
-            //todo: change spaces for _ in file name
-            title = message.substring(message.indexOf("Titulo:") + 7, message.indexOf("Descripcion:")).trim();
-            String description = message.substring(message.indexOf("Descripcion:") + 12).trim() + descriptionSuffix;
-            //create new directory for the item
-            java.io.File directory = new java.io.File(downloadPath.getAbsolutePath() + "\\" + title);
-            if (!directory.exists()) {
-                //verify if description size is correct
-                if (description.length() > 640) {
-                    int lengthDiff = description.length() - 640;
-                    sendResponse(update, "La descripcion supera en " + lengthDiff + " los caracteres permitidos");
-                    return false;
-                } else {
-                    directory.mkdir();
-                    java.io.File file = new java.io.File(directory.getPath() + "\\" + title + ".txt");
-                    itemImp.writeInfoFile(file, title, description);
-                    items.add(new Item(file));
-                    sendResponse(update, "Información recibida, envía imagen/es.");
-                    return true;
-                }
+    public Boolean processInfo(Update update, String message, String saleType) {
+        if (saleType.equals("full")) {
+            if (message.contains("Titulo:") && message.contains("Descripcion:")) {
+                //extract title and description from message
+                //todo: change spaces for _ in file name
+                title = message.substring(message.indexOf("Titulo:") + 7, message.indexOf("Descripcion:")).trim();
+                String description = message.substring(message.indexOf("Descripcion:") + 12).trim() + descriptionSuffix;
+                //create new directory for the item
+                return createFile(update, description);
             } else {
-                sendResponse(update, "Ya tienes un articulo con el mismo titulo");
+                sendResponse(update, "Formato incorrecto");
                 return false;
             }
+        } else if (saleType.equals("title")) {
+            //extract title and description from title only
+            title = message.trim();
+            String description = title + descriptionSuffix;
+            //create new directory for the item
+            return createFile(update, description);
+        }
+        return null;
+    }
+
+    //method to create new item folder and info file
+    private Boolean createFile(Update update, String description) {
+        java.io.File directory = new java.io.File(downloadPath.getAbsolutePath() + "\\" + title);
+        if (!directory.exists()) {
+            //verify if description size is correct
+            if (description.length() > 640) {
+                int lengthDiff = description.length() - 640;
+                sendResponse(update, "La descripcion supera en " + lengthDiff + " los caracteres permitidos");
+                return false;
+            } else {
+                directory.mkdir();
+                java.io.File file = new java.io.File(directory.getPath() + "\\" + title + ".txt");
+                itemImp.writeInfoFile(file, title, description);
+                items.add(new Item(file));
+                sendResponse(update, "Información recibida, envía imagen/es.");
+                return true;
+            }
         } else {
-            sendResponse(update, "Formato incorrecto");
+            sendResponse(update, "Ya tienes un articulo con el mismo titulo");
             return false;
         }
     }
@@ -165,13 +183,17 @@ public class TelegramService {
     }
 
     // process next item
-    public void nextItem(Update update, String status) {
+    public void nextItem(Update update, String status, String saleType) {
         if (status.equals("imagesUploaded")) {
-            imageCounter = 1;
-            sendResponse(update, """
+            if (saleType.equals("full")) {
+                sendResponse(update, """
                     Añadre otro articulo:
-                    Titulo: xxxx
-                    Descripcion: xxxx""");
+                    Titulo:
+                    Descripcion:""");
+            } else if (saleType.equals("title")) {
+                sendResponse(update, "Escribe el titulo:");
+            }
+            imageCounter = 1;
         } else if (status.equals("imagesNotUploaded")) {
             sendResponse(update, "No se han enviado imagenes");
         }
