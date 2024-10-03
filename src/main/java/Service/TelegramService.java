@@ -1,6 +1,6 @@
 package Service;
 
-import DAO.ItemDAOImplementation;
+import DAO.ItemDAOImp;
 import Model.Item;
 import Util.ImageProcessor;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
@@ -15,14 +15,17 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Objects;
-import java.util.concurrent.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import static Config.BotConfig.properties;
 
 public class TelegramService {
     private final WallapopService wallaService = new WallapopService();
-    private final ItemDAOImplementation itemImp = new ItemDAOImplementation();
+    private final ItemDAOImp itemImp = new ItemDAOImp();
     private final ArrayList<Item> items = new ArrayList<>();
+    private final ArrayList<Item> uploadedItems = new ArrayList<>();
     private final java.io.File downloadPath = new java.io.File(properties.getProperty("DownloadPath"));
     private String title;
     private int imageCounter = 1;
@@ -34,6 +37,7 @@ public class TelegramService {
 
     // Constructor
     public TelegramService(TelegramLongPollingBot bot) {
+        loadUploadedFiles();
         this.bot = bot;
         // extract description suffix from file
         try (BufferedReader br = new BufferedReader(new FileReader("src/main/resources/description.txt"))) {
@@ -50,9 +54,9 @@ public class TelegramService {
     public void startSale(Update update, String type) {
         if (type.equals("full")) {
             sendResponse(update, """
-                Escribe título y descripción siguiendo el siguiente formato:
-                 Titulo:
-                 Descripcion:""");
+                    Escribe título y descripción siguiendo el siguiente formato:
+                     Titulo:
+                     Descripcion:""");
         } else if (type.equals("title")) {
             sendResponse(update, "Escribe el título");
         }
@@ -166,7 +170,7 @@ public class TelegramService {
 
                 // launch a thread to compare images
                 CompletableFuture.supplyAsync(() -> comp.compare(path), executor).thenAccept(result -> {
-                    if (!result.equals("noCoincidence")){
+                    if (!result.equals("noCoincidence")) {
                         sendResponse(update, result);
                     }
                 });
@@ -187,9 +191,9 @@ public class TelegramService {
         if (status.equals("imagesUploaded")) {
             if (saleType.equals("full")) {
                 sendResponse(update, """
-                    Añadre otro articulo:
-                    Titulo:
-                    Descripcion:""");
+                        Añadre otro articulo:
+                        Titulo:
+                        Descripcion:""");
             } else if (saleType.equals("title")) {
                 sendResponse(update, "Escribe el titulo:");
             }
@@ -205,10 +209,42 @@ public class TelegramService {
             imageCounter = 1;
             sendResponse(update, "Correcto, se van a subir " + items.size() + " articulos");
             wallaService.startSale(items);
+            //add all new items to the uploaded list
+            uploadedItems.addAll(items);
             items.clear();
         } else if (status.equals("imagesNotUploaded")) {
             sendResponse(update, "No se han enviado imagenes");
         }
+    }
+
+    // send to client all uploaded items
+    public void showUploadedItems(Update update){
+        int itemCounter = 1;
+        StringBuilder response = new StringBuilder(uploadedItems.size() + " articulos para resubir:\n");
+        for (Item item: uploadedItems) {
+            response.append(itemCounter).append(" ").append(itemImp.readInfoFile(item.getInfoFile())[0]).append("\n");
+            itemCounter++;
+        }
+        response.append("Escribe el numero de los archivos que quieres que se envien dejando un espacio entre ellos");
+        sendResponse(update, response.toString().trim());
+    }
+
+    //method to upload again items
+    public void reuploadItems(Update update, String itemNumbers) {
+        String[] itemPositions = itemNumbers.split(" ");
+        //get selected items
+        for (String itemPosition : itemPositions) {
+            try {
+                items.add(uploadedItems.get(Integer.parseInt(itemPosition) - 1));
+            } catch (NumberFormatException e) {
+                sendResponse(update, "Error de formato al escribir los numeros");
+                return;
+            }
+        }
+        sendResponse(update, "Se van a resubir " + itemPositions.length + " articulos");
+        //upload selected items
+        wallaService.startSale(items);
+        items.clear();
     }
 
     // respond to client
@@ -245,7 +281,30 @@ public class TelegramService {
         System.exit(0);
     }
 
+    //method for ignored messages
     public void ignoreMessage(Update update, int messageCount) {
         sendResponse(update, "Se ha ingnorado el menssaje numero: " + messageCount);
+    }
+
+    //preload previously upload files
+    public void loadUploadedFiles() {
+        String[] items = downloadPath.list();
+        //if item list is not empty check for uploaded items
+        if (items != null) {
+            for (String item : items) {
+                String pathnameInfoFile = downloadPath + "\\" + item + "\\" + item + ".txt";
+                String status = itemImp.readStatus(new java.io.File(pathnameInfoFile));
+                if (status.equals("subido")) {
+                    // get all files inside directory except for the first
+                    String[] files = Objects.requireNonNull(new java.io.File(downloadPath + "\\" + item).list());
+                    String[] uploadedImages = Arrays.copyOfRange(files, 1, files.length);
+                    // add absolute path
+                    for (int i = 0; i < uploadedImages.length; i++) {
+                        uploadedImages[i] = downloadPath + "\\" + item + "\\" + uploadedImages[i];
+                    }
+                    uploadedItems.add(new Item(new java.io.File(pathnameInfoFile), new ArrayList<>(Arrays.asList(uploadedImages))));
+                }
+            }
+        }
     }
 }

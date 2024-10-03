@@ -35,9 +35,9 @@ public class TelegramController extends TelegramLongPollingBot {
     public void onUpdateReceived(Update update) {
         if (update.hasMessage()) {
             //ignore first messages
-            if (messageCount <=  Integer.parseInt(properties.getProperty("MessagesIgnored"))) {
+            if (messageCount <= Integer.parseInt(properties.getProperty("MessagesIgnored"))) {
                 telegramService.ignoreMessage(update, messageCount);
-                messageCount ++;
+                messageCount++;
             }
             //check if message contains image
             else if (update.getMessage().hasPhoto()) {
@@ -52,45 +52,54 @@ public class TelegramController extends TelegramLongPollingBot {
                 //get message
                 String message = update.getMessage().getText().trim();
                 // end the app
-                if (!saleProcess && !correctInfo && !imageUploaded && message.equals("/apagar")){
+                if (!saleProcess && !correctInfo && !imageUploaded && message.equals("/apagar")) {
                     telegramService.endProgram(update);
                     // if sales process hasn't started, check for command /venta to start procces
-                } else if (!saleProcess && (message.equals("/ventafull") || message.equals("/ventatitulo"))) {
+                } else if (!saleProcess && (message.equals("/ventafull") || message.equals("/ventatitulo") || message.equals("/resubir"))) {
                     //when starting the bot, check for non uploaded items, if they exist, upload them
-                    if (nonUploadedItems){
+                    if (nonUploadedItems) {
                         nonUploadedItems = telegramService.scanNonUploadedItems(update);
-                    //after uploading all non uploaded item, or no non uploaded items detected, start sales process
-                    } if (!nonUploadedItems){
+                        //after uploading all non uploaded item, or no non uploaded items detected, start sales process
+                    }
+                    if (!nonUploadedItems) {
                         //determine sale type
-                        if (message.equals("/ventafull")){
+                        if (message.equals("/ventafull")) {
                             saleType = "full";
-                        } else {
+                        } else if (message.equals("/ventatitulo")) {
                             saleType = "title";
+                        } else {
+                            saleType = "reupload";
+                            telegramService.showUploadedItems(update);
                         }
                         telegramService.startSale(update, saleType);
                         saleProcess = true;
                     }
-                //if sales process has started, and command /venta is imputed, send warning message
+                    //if sales process has started, and command /venta is imputed, send warning message
                 } else if (saleProcess && (message.equals("/ventafull") || message.equals("/ventatitulo"))) {
                     telegramService.saleAlreadyStarted(update);
-                //if sales process has started, and info is not correct, check if info is correct
-                } else if (saleProcess && !correctInfo) {
+                    //reupload items
+                } else if (saleProcess && saleType.equals("reupload")) {
+                    telegramService.reuploadItems(update, message);
+                    saleType = "";
+                    saleProcess = false;
+                }//if sales process has started, and info is not correct, check if info is correct
+                else if (saleProcess && !correctInfo) {
                     correctInfo = telegramService.processInfo(update, message, saleType);
                 } else if (correctInfo) {
                     // add new item with /siguiente
                     if (message.equals("/siguiente")) {
                         //check if images where uploaded successfully
-                        if (!imageUploaded){
+                        if (!imageUploaded) {
                             telegramService.nextItem(update, "imagesNotUploaded", saleType);
                         } else {
                             correctInfo = false;
                             imageUploaded = false;
                             telegramService.nextItem(update, "imagesUploaded", saleType);
                         }
-                    //end sales process with /finventa
+                        //end sales process with /finventa
                     } else if (message.equals("/finventa")) {
                         //check if images where uploaded successfully
-                        if (!imageUploaded){
+                        if (!imageUploaded) {
                             telegramService.finishSale(update, "imagesNotUploaded");
                         } else {
                             correctInfo = false;

@@ -10,7 +10,7 @@ public class BotConfig {
     public static Properties properties;
     private static final String configPath = "src/main/resources/BotConfig.properties";
 
-    public static void initializeProperty(){
+    public static void initializeProperty() {
         properties = new Properties();
         try {
             InputStream in = new FileInputStream(configPath);

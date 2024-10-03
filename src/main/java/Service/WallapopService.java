@@ -1,6 +1,6 @@
 package Service;
 
-import DAO.ItemDAOImplementation;
+import DAO.ItemDAOImp;
 import Model.Item;
 import Model.Page.WallapopUploadPage;
 import org.openqa.selenium.WebDriver;
@@ -27,15 +27,14 @@ import static Config.BotConfig.properties;
 
 public class WallapopService {
     private WebDriver driver;
-    private final ItemDAOImplementation itemImp = new ItemDAOImplementation();
-    private WallapopUploadPage wallaUpload;
+    private final ItemDAOImp itemImp = new ItemDAOImp();
 
-    public WallapopService(){
+    public WallapopService() {
         //element wait time
     }
 
     //start sales process
-    public void startSale(ArrayList<Item> items){
+    public void startSale(ArrayList<Item> items) {
         String[] hashTags = extractHashTags();
         //detect if chrome is open and kill it
         if (properties.getProperty("KillChrome").equals("true")) {
@@ -44,7 +43,7 @@ public class WallapopService {
         //initialize web driver
         initializeWebDriver();
         WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
-        wallaUpload = new WallapopUploadPage(driver, wait);
+        WallapopUploadPage wallaUpload = new WallapopUploadPage(driver, wait);
         //maximize browser window
         driver.manage().window().maximize();
         for (Item item : items) {
@@ -104,7 +103,7 @@ public class WallapopService {
     }
 
     //extract hashtags from file
-    private String[] extractHashTags(){
+    private String[] extractHashTags() {
         try {
             // read entire file and return array of hashtags.txt
             List<String> lines = Files.readAllLines(Paths.get("src/main/resources/hashtags.txt"));
@@ -115,7 +114,7 @@ public class WallapopService {
     }
 
     //detect chrome instance and kill it
-    private void detectedChromeInstance(){
+    private void detectedChromeInstance() {
         String processName = "chrome.exe";
         try {
             // execute task list in search for Chrome

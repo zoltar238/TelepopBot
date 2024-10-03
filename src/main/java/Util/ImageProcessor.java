@@ -12,21 +12,23 @@ import static Config.BotConfig.properties;
 public class ImageProcessor {
 
 
-    public static Map<String, BufferedImage> downloadedImages = new ConcurrentHashMap<>();
+    public static final Map<String, BufferedImage> downloadedImages = new ConcurrentHashMap<>();
 
     public void loadImages() {
         File downloadDirectory = new File(properties.getProperty("DownloadPath"));
         File[] items = downloadDirectory.listFiles();
-        for (File file : items) {
-            File[] downloadedFiles = file.listFiles();
-            //save downloaded files
-            if (downloadedFiles != null) {
-                for (File fl : downloadedFiles) {
-                    if (fl.getPath().endsWith(".jpg")) {
-                        try {
-                            downloadedImages.put(fl.getPath(), ImageIO.read(new File(fl.getPath())));
-                        } catch (IOException e) {
-                            throw new RuntimeException(e);
+        if (items != null) {
+            for (File file : items) {
+                File[] downloadedFiles = file.listFiles();
+                //save downloaded files
+                if (downloadedFiles != null) {
+                    for (File fl : downloadedFiles) {
+                        if (fl.getPath().endsWith(".jpg")) {
+                            try {
+                                downloadedImages.put(fl.getPath(), ImageIO.read(new File(fl.getPath())));
+                            } catch (IOException e) {
+                                throw new RuntimeException(e);
+                            }
                         }
                     }
                 }

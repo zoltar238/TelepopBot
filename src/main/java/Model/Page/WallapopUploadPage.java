@@ -27,14 +27,14 @@ public class WallapopUploadPage {
     By descriptionInputField = By.xpath("//textarea[@id='description']");
     //original
     //WebElement button = (WebElement) js.executeScript("return document.querySelectorAll('.walla-text-input__label.sc-walla-text-input')[8]");
-    By conditionSelector =  By.xpath("(//label[contains(@class, 'walla-text-input__label') and contains(@class, 'sc-walla-text-input')])[9]");
+    By conditionSelector = By.xpath("(//label[contains(@class, 'walla-text-input__label') and contains(@class, 'sc-walla-text-input')])[9]");
     //original
     //button = (WebElement) js.executeScript("return document.querySelectorAll('.sc-walla-dropdown-item-h.sc-walla-dropdown-item-s.hydrated')[19]");
     By conditionSelectorOption = By.xpath("(//walla-dropdown-item[contains(@class, 'sc-walla-dropdown-item-h') and contains(@class, 'sc-walla-dropdown-item-s')])[20]");
     By body = By.xpath("//tsl-multi-select-form[@class='HashtagField__suggested__multiselect ng-untouched ng-pristine ng-valid']");
     By hashTagsInputField = By.cssSelector("input[placeholder='Buscar o crear hashtag']");
     By hastTagsCheckBox = By.cssSelector(".Checkbox__mark.d-block.position-relative.m-0");
-    By submitButtonSelector =By.xpath("(//div[contains(@class, 'col-12 col-md-6')])[4]");
+    By submitButtonSelector = By.xpath("(//div[contains(@class, 'col-12 col-md-6')])[4]");
 
 
     public WallapopUploadPage(WebDriver driver, WebDriverWait wait) {
@@ -90,7 +90,9 @@ public class WallapopUploadPage {
             JavascriptExecutor js = (JavascriptExecutor) driver;
             WebElement fileInput = (WebElement) js.executeScript("return document.querySelector('.DropArea__wrapper input')");
 
-            fileInput.sendKeys(path);
+            if (fileInput != null) {
+                fileInput.sendKeys(path);
+            }
             //delay between image uploaded
             try {
                 Thread.sleep(Long.parseLong(properties.getProperty("ImageUploadWaitTime")));

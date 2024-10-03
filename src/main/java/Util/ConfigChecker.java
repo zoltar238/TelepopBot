@@ -2,7 +2,10 @@ package Util;
 
 import Model.ConfigCheckEnum.ConfigCheckEnum;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 
 import static Config.BotConfig.properties;
 
@@ -42,8 +45,8 @@ public class ConfigChecker {
     }
 
     //check user data
-    public static ConfigCheckEnum checkUserData(){
-        if (properties.getProperty("UserData").equals(System.getProperty("user.home")+ "\\AppData\\Local\\Google\\Chrome\\User Data")){
+    public static ConfigCheckEnum checkUserData() {
+        if (properties.getProperty("UserData").equals(System.getProperty("user.home") + "\\AppData\\Local\\Google\\Chrome\\User Data")) {
             return ConfigCheckEnum.USERDATA_PATH_OK;
         } else {
             return ConfigCheckEnum.USERDATA_PATH_WRONG;
@@ -51,12 +54,12 @@ public class ConfigChecker {
     }
 
     //check hashtags are 5 or less and don't contain the # symbol
-    public static ConfigCheckEnum checkHashtags(){
+    public static ConfigCheckEnum checkHashtags() {
         int lineCounter = 0;
         try (BufferedReader reader = new BufferedReader(new FileReader("src/main/resources/hashtags.txt"))) {
             String line;
-            while ((line = reader.readLine()) != null){
-                if (line.contains("#")){
+            while ((line = reader.readLine()) != null) {
+                if (line.contains("#")) {
                     return ConfigCheckEnum.NO_HASH_CHAR_ALLOWED;
                 }
                 lineCounter++;

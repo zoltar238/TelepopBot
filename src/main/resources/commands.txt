@@ -1,3 +1,4 @@
+resubir - Reañade items previamente subidos
 ventafull - Inicio de venta con titulo y descripcion
 ventatitulo - Inicio de venta solo con titulo
 siguiente - Añade el siguiente item
