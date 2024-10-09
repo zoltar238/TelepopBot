@@ -108,13 +108,8 @@ public class WallapopService {
         chromeOptions.addArguments("profile-directory=" + properties.getProperty("Profile"));
         WebDriver driver = new ChromeDriver(chromeOptions);
 
-        // Navegar a la página de inicio de sesión
         driver.get("https://es.wallapop.com");
-
-        // Realizar el proceso de inicio de sesión (puedes usar Selenium para automatizarlo)
-        // Aquí deberías agregar tu lógica para iniciar sesión
-
-        // Capturar todas las cookies de la sesión después de iniciar sesión
+        //capture profile cookies
         Set<Cookie> cookies = driver.manage().getCookies();
         driver.quit();
         return cookies;
@@ -132,9 +127,9 @@ public class WallapopService {
             case "Chrome":
                 System.setProperty("webdriver.chrome.driver", "src/main/resources/chromedriver.exe");
                 ChromeOptions options = new ChromeOptions();
-                //options.addArguments("--headless"); // Ejecutar en modo headless
+                //execute as headless to save memory
+                options.addArguments("--headless");
                 try {
-                    //return new RemoteWebDriver(new URL("http://localhost:4444"), chromeOptions);
                     return new RemoteWebDriver(new URL("http://localhost:4444"), options);
                 } catch (MalformedURLException e) {
                     throw new RuntimeException(e);
