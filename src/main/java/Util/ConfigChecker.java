@@ -6,61 +6,80 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import static Config.BotConfig.properties;
 
 public class ConfigChecker {
 
-    //check configuration path
-    public static ConfigCheckEnum checkDownloadPath() {
+    public Map<ConfigCheckEnum, Boolean> checkConfigFile() {
+        // HashMap to store the results of the configuration checks
+        Map<ConfigCheckEnum, Boolean> configResults = new LinkedHashMap<>();
+
+        // Perform all checks and add results to the map
+        checkDownloadPath(configResults);
+        checkUserData(configResults);
+        checkHashtags(configResults);
+        checkMessagesIgnored(configResults);
+        checkWebDriver(configResults);
+        checkImageUploadWaitTime(configResults);
+        checkItemUploadWaitTime(configResults);
+        checkCleanUpWaitTime(configResults);
+        checkBooleanConfigs(configResults);
+
+        return configResults;
+    }
+
+    // Check download path and add result to the map
+    private void checkDownloadPath(Map<ConfigCheckEnum, Boolean> configResults) {
         File downloadDirectory = new File(properties.getProperty("DownloadPath"));
-        // check if it exists
         if (downloadDirectory.exists()) {
             if (downloadDirectory.isDirectory()) {
-                //get all files inside the directory
                 File[] items = downloadDirectory.listFiles();
-                //if download directory is empty -> ok, else, check file structure
                 if (items != null) {
                     for (File file : items) {
                         File[] downloadedFiles = file.listFiles();
-                        //check file structure
                         if (downloadedFiles != null) {
                             for (File fl : downloadedFiles) {
                                 if (!fl.getPath().endsWith(".txt") && !fl.getPath().endsWith(".jpg")) {
-                                    return ConfigCheckEnum.WRONG_STRUCTURE;
+                                    configResults.put(ConfigCheckEnum.WRONG_STRUCTURE, false);
+                                    return;
                                 }
                             }
                         } else {
-                            return ConfigCheckEnum.WRONG_STRUCTURE;
+                            configResults.put(ConfigCheckEnum.WRONG_STRUCTURE, false);
+                            return;
                         }
                     }
                 }
-                return ConfigCheckEnum.DOWNLOAD_PATH_OK;
+                configResults.put(ConfigCheckEnum.DOWNLOAD_PATH_OK, true);
             } else {
-                return ConfigCheckEnum.NOT_A_DIRECTORY;
+                configResults.put(ConfigCheckEnum.NOT_A_DIRECTORY, false);
             }
         } else {
-            return ConfigCheckEnum.FILE_DOESNT_EXIST;
+            configResults.put(ConfigCheckEnum.FILE_DOESNT_EXIST, false);
         }
     }
 
-    //check user data
-    public static ConfigCheckEnum checkUserData() {
+    // Check user data path and add result to the map
+    private void checkUserData(Map<ConfigCheckEnum, Boolean> configResults) {
         if (properties.getProperty("UserData").equals(System.getProperty("user.home") + "\\AppData\\Local\\Google\\Chrome\\User Data")) {
-            return ConfigCheckEnum.USERDATA_PATH_OK;
+            configResults.put(ConfigCheckEnum.USERDATA_PATH_OK, true);
         } else {
-            return ConfigCheckEnum.USERDATA_PATH_WRONG;
+            configResults.put(ConfigCheckEnum.USERDATA_PATH_WRONG, false);
         }
     }
 
-    //check hashtags are 5 or less and don't contain the # symbol
-    public static ConfigCheckEnum checkHashtags() {
+    // Check hashtags and add result to the map
+    private void checkHashtags(Map<ConfigCheckEnum, Boolean> configResults) {
         int lineCounter = 0;
         try (BufferedReader reader = new BufferedReader(new FileReader("src/main/resources/hashtags.txt"))) {
             String line;
             while ((line = reader.readLine()) != null) {
                 if (line.contains("#")) {
-                    return ConfigCheckEnum.NO_HASH_CHAR_ALLOWED;
+                    configResults.put(ConfigCheckEnum.NO_HASH_CHAR_ALLOWED, false);
+                    return;
                 }
                 lineCounter++;
             }
@@ -68,11 +87,90 @@ public class ConfigChecker {
             throw new RuntimeException(e);
         }
         if (lineCounter <= 5) {
-            return ConfigCheckEnum.HASTAGS_OK;
+            configResults.put(ConfigCheckEnum.HASHTAGS_OK, true);
         } else {
-            return ConfigCheckEnum.HASTAGS_EXCEED_MAX;
+            configResults.put(ConfigCheckEnum.HASHTAGS_EXCEED_MAX, false);
         }
     }
 
-    //todo: write check for the rest of the elements
+    // Check MessagesIgnored (must be a valid integer) and add result to the map
+    private void checkMessagesIgnored(Map<ConfigCheckEnum, Boolean> configResults) {
+        try {
+            int messagesIgnored = Integer.parseInt(properties.getProperty("MessagesIgnored"));
+            if (messagesIgnored >= 0) {
+                configResults.put(ConfigCheckEnum.MESSAGES_IGNORED_OK, true);
+            } else {
+                configResults.put(ConfigCheckEnum.INVALID_MESSAGES_IGNORED_NEGATIVE, false);
+            }
+        } catch (NumberFormatException e) {
+            configResults.put(ConfigCheckEnum.MESSAGES_IGNORED_MUST_BE_INTEGER, false);
+        }
+    }
+
+    // Check WebDriver and add result to the map
+    private void checkWebDriver(Map<ConfigCheckEnum, Boolean> configResults) {
+        String webDriver = properties.getProperty("WebDriver");
+        if ("Chrome".equalsIgnoreCase(webDriver) || "Edge".equalsIgnoreCase(webDriver) || "Firefox".equalsIgnoreCase(webDriver)) {
+            configResults.put(ConfigCheckEnum.WEBDRIVER_OK, true);
+        } else {
+            configResults.put(ConfigCheckEnum.INVALID_WEBDRIVER, false);
+        }
+    }
+
+    // Check ImageUploadWaitTime (must be a valid integer) and add result to the map
+    private void checkImageUploadWaitTime(Map<ConfigCheckEnum, Boolean> configResults) {
+        try {
+            int imageUploadWaitTime = Integer.parseInt(properties.getProperty("ImageUploadWaitTime"));
+            if (imageUploadWaitTime >= 0) {
+                configResults.put(ConfigCheckEnum.IMAGE_UPLOAD_WAIT_TIME_OK, true);
+            } else {
+                configResults.put(ConfigCheckEnum.INVALID_IMAGE_NEGATIVE, false);
+            }
+        } catch (NumberFormatException e) {
+            configResults.put(ConfigCheckEnum.IMAGE_UPLOAD_WAIT_TIME_MUST_BE_INTEGER, false);
+        }
+    }
+
+    // Check ItemUploadWaitTime (must be a valid integer) and add result to the map
+    private void checkItemUploadWaitTime(Map<ConfigCheckEnum, Boolean> configResults) {
+        try {
+            int itemUploadWaitTime = Integer.parseInt(properties.getProperty("ItemUploadWaitTime"));
+            if (itemUploadWaitTime >= 0) {
+                configResults.put(ConfigCheckEnum.ITEM_UPLOAD_WAIT_TIME_OK, true);
+            } else {
+                configResults.put(ConfigCheckEnum.INVALID_ITEM_UPLOAD_NEGATIVE, false);
+            }
+        } catch (NumberFormatException e) {
+            configResults.put(ConfigCheckEnum.ITEM_UPLOAD_WAIT_TIME_MUST_BE_INTEGER, false);
+        }
+    }
+
+    // Check CleanUpWaitTime (must be a valid integer) and add result to the map
+    private void checkCleanUpWaitTime(Map<ConfigCheckEnum, Boolean> configResults) {
+        try {
+            int cleanUpWaitTime = Integer.parseInt(properties.getProperty("CleanUpWaitTime"));
+            if (cleanUpWaitTime >= 0) {
+                configResults.put(ConfigCheckEnum.CLEANUP_WAIT_TIME_OK, true);
+            } else {
+                configResults.put(ConfigCheckEnum.CLEANUP_WAIT_TIME_NEGATIVE, false);
+            }
+        } catch (NumberFormatException e) {
+            configResults.put(ConfigCheckEnum.CLEANUP_WAIT_TIME_MUST_BE_INTEGER, false);
+        }
+    }
+
+    // Check CleanUp and KillChrome (must be boolean) and add result to the map
+    private void checkBooleanConfigs(Map<ConfigCheckEnum, Boolean> configResults) {
+        if (!"true".equalsIgnoreCase(properties.getProperty("CleanUp")) && !"false".equalsIgnoreCase(properties.getProperty("CleanUp"))) {
+            configResults.put(ConfigCheckEnum.INVALID_CLEANUP_BOOLEAN, false);
+        } else {
+            configResults.put(ConfigCheckEnum.CLEANUP_BOOLEAN_OK, true);
+        }
+
+        if (!"true".equalsIgnoreCase(properties.getProperty("KillChrome")) && !"false".equalsIgnoreCase(properties.getProperty("KillChrome"))) {
+            configResults.put(ConfigCheckEnum.INVALID_KILL_CHROME_BOOLEAN, false);
+        } else {
+            configResults.put(ConfigCheckEnum.KILL_CHROME_BOOLEAN_OK, true);
+        }
+    }
 }

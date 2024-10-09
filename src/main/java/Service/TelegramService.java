@@ -203,6 +203,21 @@ public class TelegramService {
         }
     }
 
+    //cancel sale
+    public void cancelSale(Update update) {
+        if (items.isEmpty()) {
+            sendResponse(update, "Se ha cancelado el procese de venta");
+        } else {
+            java.io.File file;
+            for (Item item : items) {
+                file = new java.io.File(downloadPath + "\\" + itemImp.readInfoFile(item.getInfoFile())[0]);
+                deleteDirectory(file);
+            }
+            sendResponse(update, "Se han eliminado " + items.size() + " articulos, vuelve a iniciar proceso de venta");
+            items.clear();
+        }
+    }
+
     //finish processing items
     public void finishSale(Update update, String status) {
         if (status.equals("imagesUploaded")) {
@@ -218,10 +233,10 @@ public class TelegramService {
     }
 
     // send to client all uploaded items
-    public void showUploadedItems(Update update){
+    public void showUploadedItems(Update update) {
         int itemCounter = 1;
         StringBuilder response = new StringBuilder(uploadedItems.size() + " articulos para resubir:\n");
-        for (Item item: uploadedItems) {
+        for (Item item : uploadedItems) {
             response.append(itemCounter).append(" ").append(itemImp.readInfoFile(item.getInfoFile())[0]).append("\n");
             itemCounter++;
         }
@@ -306,5 +321,20 @@ public class TelegramService {
                 }
             }
         }
+    }
+
+    //delete all files inside directory
+    public void deleteDirectory(java.io.File directory) {
+        java.io.File[] files = directory.listFiles();
+        if (files != null) {
+            for (java.io.File file : files) {
+                if (file.isDirectory()) {
+                    deleteDirectory(file);
+                } else {
+                    file.delete();
+                }
+            }
+        }
+        directory.delete();
     }
 }

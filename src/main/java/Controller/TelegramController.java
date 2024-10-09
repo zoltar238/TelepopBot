@@ -54,8 +54,14 @@ public class TelegramController extends TelegramLongPollingBot {
                 // end the app
                 if (!saleProcess && !correctInfo && !imageUploaded && message.equals("/apagar")) {
                     telegramService.endProgram(update);
-                    // if sales process hasn't started, check for command /venta to start procces
-                } else if (!saleProcess && (message.equals("/ventafull") || message.equals("/ventatitulo") || message.equals("/resubir"))) {
+                } else if (message.equals("/cancelartodo")) {
+                    telegramService.cancelSale(update);
+                    correctInfo = false;
+                    saleProcess = false;
+                    imageUploaded = false;
+                }
+                // if sales process hasn't started, check for command /venta to start procces
+                else if (!saleProcess && (message.equals("/ventafull") || message.equals("/ventatitulo") || message.equals("/resubir"))) {
                     //when starting the bot, check for non uploaded items, if they exist, upload them
                     if (nonUploadedItems) {
                         nonUploadedItems = telegramService.scanNonUploadedItems(update);
