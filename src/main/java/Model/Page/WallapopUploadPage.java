@@ -14,7 +14,7 @@ import static Config.BotConfig.properties;
 
 public class WallapopUploadPage {
 
-     WebDriver driver;
+    WebDriver driver;
     WebDriverWait wait;
     JavascriptExecutor js;
 

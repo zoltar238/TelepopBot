@@ -32,6 +32,8 @@ public class Main {
             BadConfigView badConfigView = new BadConfigView(configSatusMap);
         } else {
             try {
+                //launch selenium server
+                seleniumController.startSelenium();
                 //start telegram bot
                 TelegramBotsApi botsApi = new TelegramBotsApi(DefaultBotSession.class);
                 botsApi.registerBot(new TelegramController());
@@ -40,8 +42,6 @@ public class Main {
                 processor.loadImages();
                 //create tray icon
                 SystemTrayIcon trayIcon = new SystemTrayIcon();
-                //launch selenium server
-                seleniumController.startSelenium();
             } catch (TelegramApiException e) {
                 e.printStackTrace();
             }

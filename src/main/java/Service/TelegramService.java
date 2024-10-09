@@ -26,6 +26,7 @@ public class TelegramService {
     private final ItemDAOImp itemImp = new ItemDAOImp();
     private final ArrayList<Item> items = new ArrayList<>();
     private final ArrayList<Item> uploadedItems = new ArrayList<>();
+    private final ArrayList<Item> nonUploadedItems = new ArrayList<>();
     private final java.io.File downloadPath = new java.io.File(properties.getProperty("DownloadPath"));
     private String title;
     private int imageCounter = 1;
@@ -37,7 +38,7 @@ public class TelegramService {
 
     // Constructor
     public TelegramService(TelegramLongPollingBot bot) {
-        loadUploadedFiles();
+        loadFiles();
         this.bot = bot;
         // extract description suffix from file
         try (BufferedReader br = new BufferedReader(new FileReader("src/main/resources/description.txt"))) {
@@ -65,25 +66,7 @@ public class TelegramService {
     //search for non uploaded items and upload them if they are found
     public Boolean scanNonUploadedItems(Update update) {
         sendResponse(update, "Escaneando articulos sin subir");
-        String[] items = downloadPath.list();
-        ArrayList<Item> nonUploadedItems = new ArrayList<>();
-        //if item list is not empty check for non uploaded items
-        if (items != null) {
-            for (String item : items) {
-                String pathnameInfoFile = downloadPath + "\\" + item + "\\" + item + ".txt";
-                String status = itemImp.readStatus(new java.io.File(pathnameInfoFile));
-                if (status.equals("sinSubir")) {
-                    // get all files inside directory except for the first
-                    String[] files = Objects.requireNonNull(new java.io.File(downloadPath + "\\" + item).list());
-                    String[] nonUploadedImages = Arrays.copyOfRange(files, 1, files.length);
-                    // add absolute path
-                    for (int i = 0; i < nonUploadedImages.length; i++) {
-                        nonUploadedImages[i] = downloadPath + "\\" + item + "\\" + nonUploadedImages[i];
-                    }
-                    nonUploadedItems.add(new Item(new java.io.File(pathnameInfoFile), new ArrayList<>(Arrays.asList(nonUploadedImages))));
-                }
-            }
-        }
+        //if there are non uploaded items, upload them
         if (nonUploadedItems.isEmpty()) {
             sendResponse(update, "Archivos sin subir no detectados");
             return false;
@@ -302,22 +285,30 @@ public class TelegramService {
     }
 
     //preload previously upload files
-    public void loadUploadedFiles() {
+    public void loadFiles() {
         String[] items = downloadPath.list();
         //if item list is not empty check for uploaded items
         if (items != null) {
             for (String item : items) {
                 String pathnameInfoFile = downloadPath + "\\" + item + "\\" + item + ".txt";
                 String status = itemImp.readStatus(new java.io.File(pathnameInfoFile));
+                String[] files = Objects.requireNonNull(new java.io.File(downloadPath + "\\" + item).list());
+                String[] uploadedImages = Arrays.copyOfRange(files, 1, files.length);
+                //categorize into uploaded and nonUploaded
                 if (status.equals("subido")) {
                     // get all files inside directory except for the first
-                    String[] files = Objects.requireNonNull(new java.io.File(downloadPath + "\\" + item).list());
-                    String[] uploadedImages = Arrays.copyOfRange(files, 1, files.length);
                     // add absolute path
                     for (int i = 0; i < uploadedImages.length; i++) {
                         uploadedImages[i] = downloadPath + "\\" + item + "\\" + uploadedImages[i];
                     }
                     uploadedItems.add(new Item(new java.io.File(pathnameInfoFile), new ArrayList<>(Arrays.asList(uploadedImages))));
+                } else {
+                    // get all files inside directory except for the first
+                    // add absolute path
+                    for (int i = 0; i < uploadedImages.length; i++) {
+                        uploadedImages[i] = downloadPath + "\\" + item + "\\" + uploadedImages[i];
+                    }
+                    nonUploadedItems.add(new Item(new java.io.File(pathnameInfoFile), new ArrayList<>(Arrays.asList(uploadedImages))));
                 }
             }
         }

@@ -46,10 +46,8 @@ public class WallapopService {
         if (properties.getProperty("KillChrome").equals("true")) {
             detectedChromeInstance();
         }
-        //initialize web driver
 
-        //maximize browser window
-
+        //get cookies
         Set<Cookie> savedCookies = getCookie();
 
         for (Item item : items) {
@@ -59,21 +57,20 @@ public class WallapopService {
                 driver.manage().window().maximize();
                 //load upload page
                 driver.get("https://es.wallapop.com");
+                //load cookies to driver
                 savedCookies.forEach(cookie -> driver.manage().addCookie(cookie));
                 driver.navigate().refresh();
-
 
                 //read info file
                 String[] info = itemImp.readInfoFile(item.getInfoFile()); //{title, description}
 
-
                 do {
-                    wallaUpload.success.set(true);  // Reiniciar el estado de éxito al comienzo de cada intento
-
+                    wallaUpload.success.set(true);
+                    //refresh page
                     driver.get("https://es.wallapop.com/app/catalog/upload");
                     driver.navigate().refresh();
-
                     wallaUpload.acceptCookies();
+                    //run until upload succeeds
                     if (wallaUpload.success.get()) wallaUpload.selectProductType();
                     if (wallaUpload.success.get()) wallaUpload.enterTitle(info[0]);
                     if (wallaUpload.success.get()) wallaUpload.selectCategory();
@@ -83,11 +80,7 @@ public class WallapopService {
                     if (wallaUpload.success.get()) wallaUpload.enterHashTags(hashTags);
                     if (wallaUpload.success.get()) wallaUpload.uploadImages(item.getPaths());
                     if (wallaUpload.success.get()) wallaUpload.submit();
-
-                    System.out.println(wallaUpload.success.get());
-
-                } while (!wallaUpload.success.get());  // Si falla, el bucle se repetirá
-
+                } while (!wallaUpload.success.get());
 
                 try {
                     Thread.sleep(Long.parseLong(properties.getProperty("ItemUploadWaitTime")));
@@ -99,7 +92,6 @@ public class WallapopService {
                 cleanup(driver);
             });
         }
-        //executor.shutdown();
     }
 
     private Set<Cookie> getCookie() {
@@ -127,8 +119,6 @@ public class WallapopService {
             case "Chrome":
                 System.setProperty("webdriver.chrome.driver", "src/main/resources/chromedriver.exe");
                 ChromeOptions options = new ChromeOptions();
-                //execute as headless to save memory
-                options.addArguments("--headless");
                 try {
                     return new RemoteWebDriver(new URL("http://localhost:4444"), options);
                 } catch (MalformedURLException e) {

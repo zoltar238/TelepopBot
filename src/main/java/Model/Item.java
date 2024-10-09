@@ -31,5 +31,4 @@ public class Item {
         this.infoFile.delete();
         tempFile.renameTo(this.infoFile);
     }
-
 }
