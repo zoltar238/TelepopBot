@@ -73,6 +73,7 @@ public class TelegramService {
         } else {
             sendResponse(update, "Archivos sin subir detectados, procediendo a subirlos");
             wallaService.startSale(nonUploadedItems);
+            nonUploadedItems.clear();
             return true;
         }
     }
@@ -136,28 +137,31 @@ public class TelegramService {
             var photo = photos.getLast();
             var fileId = photo.getFileId();
             try {
-                // get image URL
-                GetFile getFileMethod = new GetFile(fileId);
-                File telegramFile = bot.execute(getFileMethod);
-                String fileUrl = "https://api.telegram.org/file/bot" + bot.getBotToken() + "/" + telegramFile.getFilePath();
+                if (imageCounter <= 10) {
+                    // get image URL
+                    GetFile getFileMethod = new GetFile(fileId);
+                    File telegramFile = bot.execute(getFileMethod);
+                    String fileUrl = "https://api.telegram.org/file/bot" + bot.getBotToken() + "/" + telegramFile.getFilePath();
 
-                // download image
-                String path = downloadPath + "\\" + title + "\\" + title + imageCounter + ".jpg";
-                // add image to
-                items.getLast().addPath(path);
-                downloadImage(fileUrl, path);
-                sendResponse(update, "Imagen " + imageCounter + " descargada correctamente");
-                imageCounter++;
-                //compare image
-                ImageProcessor comp = new ImageProcessor();
+                    // download image
+                    String path = downloadPath + "\\" + title + "\\" + title + imageCounter + ".jpg";
+                    // add image to
+                    items.getLast().addPath(path);
+                    downloadImage(fileUrl, path);
+                    sendResponse(update, "Imagen " + imageCounter + " descargada correctamente");
+                    imageCounter++;
+                    //compare image
+                    ImageProcessor comp = new ImageProcessor();
 
-                // launch a thread to compare images
-                CompletableFuture.supplyAsync(() -> comp.compare(path), executor).thenAccept(result -> {
-                    if (!result.equals("noCoincidence")) {
-                        sendResponse(update, result);
-                    }
-                });
-
+                    // launch a thread to compare images
+                    CompletableFuture.supplyAsync(() -> comp.compare(path), executor).thenAccept(result -> {
+                        if (!result.equals("noCoincidence")) {
+                            sendResponse(update, result);
+                        }
+                    });
+                } else {
+                    sendResponse(update, "Imagen no descargada, se ha superado el máximo de 10");
+                }
             } catch (Exception e) {
                 e.printStackTrace();
                 sendResponse(update, "Hubo un problema al descargar la imagen. Inténtalo nuevamente.");
@@ -189,7 +193,7 @@ public class TelegramService {
     //cancel sale
     public void cancelSale(Update update) {
         if (items.isEmpty()) {
-            sendResponse(update, "Se ha cancelado el procese de venta");
+            sendResponse(update, "Se ha cancelado el proceso de venta");
         } else {
             java.io.File file;
             for (Item item : items) {
@@ -213,6 +217,12 @@ public class TelegramService {
         } else if (status.equals("imagesNotUploaded")) {
             sendResponse(update, "No se han enviado imagenes");
         }
+    }
+
+    //
+    public void saveItems(Update update) {
+        sendResponse(update, "Articulos guardados, se subiran cuando reinicies el programa");
+        items.clear();
     }
 
     // send to client all uploaded items

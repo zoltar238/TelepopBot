@@ -1,11 +1,13 @@
 package Controller;
 
 import Service.TelegramService;
+import lombok.extern.slf4j.Slf4j;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
 import static Config.BotConfig.properties;
 
+@Slf4j
 public class TelegramController extends TelegramLongPollingBot {
     private final TelegramService telegramService;
     private final String botUsername = properties.getProperty("Username");
@@ -93,29 +95,37 @@ public class TelegramController extends TelegramLongPollingBot {
                     correctInfo = telegramService.processInfo(update, message, saleType);
                 } else if (correctInfo) {
                     // add new item with /siguiente
-                    if (message.equals("/siguiente")) {
-                        //check if images where uploaded successfully
-                        if (!imageUploaded) {
-                            telegramService.nextItem(update, "imagesNotUploaded", saleType);
-                        } else {
-                            correctInfo = false;
-                            imageUploaded = false;
-                            telegramService.nextItem(update, "imagesUploaded", saleType);
-                        }
-                        //end sales process with /finventa
-                    } else if (message.equals("/finventa")) {
-                        //check if images where uploaded successfully
-                        if (!imageUploaded) {
-                            telegramService.finishSale(update, "imagesNotUploaded");
-                        } else {
+                    switch (message) {
+                        case "/siguiente" -> {
+                            //check if images where uploaded successfully
+                            if (!imageUploaded) {
+                                telegramService.nextItem(update, "imagesNotUploaded", saleType);
+                            } else {
+                                correctInfo = false;
+                                imageUploaded = false;
+                                telegramService.nextItem(update, "imagesUploaded", saleType);
+                            }
+                        } //end sales process with /finventa
+                        case "/finventa" -> {
+                            //check if images where uploaded successfully
+                            if (!imageUploaded) {
+                                telegramService.finishSale(update, "imagesNotUploaded");
+                            } else {
+                                correctInfo = false;
+                                saleProcess = false;
+                                imageUploaded = false;
+                                saleType = "";
+                                telegramService.finishSale(update, "imagesUploaded");
+                            }
+                        }//save items to upload them later
+                        case "/guardar" -> {
                             correctInfo = false;
                             saleProcess = false;
                             imageUploaded = false;
                             saleType = "";
-                            telegramService.finishSale(update, "imagesUploaded");
-                        }
-                    } else {
-                        telegramService.processImages(update, "sdfsdf");
+                            telegramService.saveItems(update);
+                        }//send warning message if image is expected
+                        default -> telegramService.processImages(update, "noImage");
                     }
                 }
             }

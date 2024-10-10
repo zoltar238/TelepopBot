@@ -1,5 +1,6 @@
 package Model.Page;
 
+import lombok.extern.slf4j.Slf4j;
 import org.openqa.selenium.*;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
@@ -12,13 +13,13 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import static Config.BotConfig.properties;
 
+@Slf4j
 public class WallapopUploadPage {
 
     WebDriver driver;
     WebDriverWait wait;
     JavascriptExecutor js;
 
-    private static final Logger logger = LoggerFactory.getLogger(WallapopUploadPage.class);
 
     private final By acceptCookies = new By.ByCssSelector("#onetrust-accept-btn-handler");
     private final By productTypeOption = By.xpath("//span[text()='Algo que ya no necesito']");
@@ -116,7 +117,7 @@ public class WallapopUploadPage {
             try {
                 Thread.sleep(Long.parseLong(properties.getProperty("ImageUploadWaitTime")));
             } catch (InterruptedException e) {
-                logger.error("Error during image upload wait time");
+                log.error("Error during image upload wait time");
             }
         }
     }
@@ -132,10 +133,10 @@ public class WallapopUploadPage {
             WebElement textField = wait.until(ExpectedConditions.visibilityOfElementLocated(locator));
             textField.sendKeys(text);
             textField.sendKeys(Keys.RETURN);
-            logger.info(successMessage);
+            log.info(successMessage);
         } catch (TimeoutException e) {
             success.set(false);
-            logger.error(errorMessage);
+            log.error(errorMessage);
         }
     }
 
@@ -148,37 +149,37 @@ public class WallapopUploadPage {
                 // Esperar hasta que el elemento sea clicable
                 WebElement button = wait.until(ExpectedConditions.elementToBeClickable(locator));
                 button.click();
-                logger.info(successMessage);
+                log.info(successMessage);
                 return;  // Si tiene éxito, salir del método
             } catch (TimeoutException e) {
                 System.out.println("TimeoutException: No se ha podido clickar en el intento " + (attempts + 1));
-                logger.warn("{} Intento: {}", errorMessage, attempts + 1);
+                log.warn("{} Intento: {}", errorMessage, attempts + 1);
             } catch (NoSuchElementException e) {
                 System.out.println("NoSuchElementException: El elemento no se encontró en el DOM.");
-                logger.warn("No se encontró el elemento: {}", errorMessage);
+                log.warn("No se encontró el elemento: {}", errorMessage);
             } catch (ElementClickInterceptedException e) {
                 System.out.println("ElementClickInterceptedException: El clic fue interceptado por otro elemento.");
-                logger.warn("El clic fue interceptado: {}", errorMessage);
+                log.warn("El clic fue interceptado: {}", errorMessage);
                 success.set(false);
             } catch (ElementNotInteractableException e) {
                 System.out.println("ElementNotInteractableException: El elemento no es interactuable.");
-                logger.warn("El elemento no es interactuable: {}", errorMessage);
+                log.warn("El elemento no es interactuable: {}", errorMessage);
                 success.set(false);
             } catch (InvalidElementStateException e) {
                 System.out.println("InvalidElementStateException: El estado del elemento no permite la interacción.");
-                logger.warn("El estado del elemento no permite la interacción: {}", errorMessage);
+                log.warn("El estado del elemento no permite la interacción: {}", errorMessage);
                 success.set(false);
             } catch (StaleElementReferenceException e) {
                 System.out.println("StaleElementReferenceException: El elemento ya no es válido (puede haber sido recargado).");
-                logger.warn("El elemento ya no es válido o ha sido recargado: {}", errorMessage);
+                log.warn("El elemento ya no es válido o ha sido recargado: {}", errorMessage);
                 success.set(false);
             } catch (WebDriverException e) {
                 System.out.println("WebDriverException: Un error genérico de WebDriver ha ocurrido.");
-                logger.warn("Un error de WebDriver ha ocurrido: {}", errorMessage);
+                log.warn("Un error de WebDriver ha ocurrido: {}", errorMessage);
                 success.set(false);
             } catch (Exception e) {
                 System.out.println("Exception: Se produjo una excepción no esperada: " + e.getMessage());
-                logger.warn("Excepción no esperada: {}", e.getMessage());
+                log.warn("Excepción no esperada: {}", e.getMessage());
                 success.set(false);
             }
 

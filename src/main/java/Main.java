@@ -6,12 +6,14 @@ import Util.ConfigChecker;
 import Util.ImageProcessor;
 import View.BadConfigView;
 import View.SystemTrayIcon;
+import lombok.extern.slf4j.Slf4j;
 import org.telegram.telegrambots.meta.TelegramBotsApi;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
 
 import java.util.Map;
 
+@Slf4j
 public class Main {
     public static void main(String[] args) {
         //initialize configuration file
@@ -43,7 +45,7 @@ public class Main {
                 //create tray icon
                 SystemTrayIcon trayIcon = new SystemTrayIcon();
             } catch (TelegramApiException e) {
-                e.printStackTrace();
+                log.error(e.getMessage(), e);
             }
         }
 

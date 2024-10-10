@@ -1,4 +1,5 @@
 resubir - Reañade items previamente subidos
+guardar - Guarda los items
 cancelartodo - Cancela todos los items y los borra
 ventafull - Inicio de venta con titulo y descripcion
 ventatitulo - Inicio de venta solo con titulo

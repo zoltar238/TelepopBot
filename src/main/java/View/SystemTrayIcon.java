@@ -2,6 +2,8 @@ package View;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
 
@@ -42,29 +44,15 @@ public class SystemTrayIcon {
     private static PopupMenu getPopupMenu() {
         PopupMenu popup = new PopupMenu();
 
-
         // Create a pop-up menu components
-        MenuItem aboutItem = new MenuItem("About");
-        CheckboxMenuItem cb1 = new CheckboxMenuItem("Set auto size");
-        CheckboxMenuItem cb2 = new CheckboxMenuItem("Set tooltip");
-        Menu displayMenu = new Menu("Display");
-        MenuItem errorItem = new MenuItem("Error");
-        MenuItem warningItem = new MenuItem("Warning");
-        MenuItem infoItem = new MenuItem("Info");
-        MenuItem noneItem = new MenuItem("None");
-        MenuItem exitItem = new MenuItem("Exit");
+        CheckboxMenuItem suspendToggle = new CheckboxMenuItem("Pausa");
+        suspendToggle.addItemListener(e -> System.out.println("Pausando"));
 
-        //Add components to pop-up menu
-        popup.add(aboutItem);
-        popup.addSeparator();
-        popup.add(cb1);
-        popup.add(cb2);
-        popup.addSeparator();
-        popup.add(displayMenu);
-        displayMenu.add(errorItem);
-        displayMenu.add(warningItem);
-        displayMenu.add(infoItem);
-        displayMenu.add(noneItem);
+        MenuItem exitItem = new MenuItem("Apagar");
+        exitItem.addActionListener(e -> System.exit(0));
+
+        //add components to pop-up menu
+        popup.add(suspendToggle);
         popup.add(exitItem);
         return popup;
     }

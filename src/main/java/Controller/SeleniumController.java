@@ -1,11 +1,16 @@
 package Controller;
 
+import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
 import static Config.BotConfig.properties;
 
+@Slf4j
 public class SeleniumController {
     private Process seleniumProcess;
 
@@ -18,7 +23,9 @@ public class SeleniumController {
                 try (BufferedReader reader = new BufferedReader(new InputStreamReader(seleniumProcess.getInputStream()))) {
                     String line;
                     while ((line = reader.readLine()) != null) {
-                        System.out.println("Selenium: " + line);
+                        //System.out.println("Selenium: " + line);
+                        //logger.info("Selenium: {}", line);
+                        log.info(line);
                     }
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -33,7 +40,6 @@ public class SeleniumController {
             throw new RuntimeException("Error al esperar la inicialización de Selenium Grid", e);
         }
     }
-
 
     //shut down selenium grid
     public void shutDownSelenium() {
