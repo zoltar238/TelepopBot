@@ -132,7 +132,7 @@ public class TelegramController extends TelegramLongPollingBot {
                             saleType = "";
                             sendResponse(update, telegramService.saveItems());
                         }//send warning message if image is expected
-                        default -> sendResponse(update, telegramService.processImage(update,  botToken,"noImage"));
+                        default -> sendResponse(update, telegramService.processImage(update, botToken, "noImage"));
                     }
                 }
             }
