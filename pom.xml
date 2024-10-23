@@ -6,7 +6,7 @@
 
     <groupId>org.example</groupId>
     <artifactId>TelepopBot</artifactId>
-    <version>2.0.0-beta1</version>
+    <version>1.0.1</version>
 
 
     <properties>
@@ -18,15 +18,16 @@
     <build>
         <plugins>
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jar-plugin</artifactId>
-                <version>3.2.0</version>
+                <artifactId>maven-assembly-plugin</artifactId>
                 <configuration>
                     <archive>
                         <manifest>
                             <mainClass>Main</mainClass>
                         </manifest>
                     </archive>
+                    <descriptorRefs>
+                        <descriptorRef>jar-with-dependencies</descriptorRef>
+                    </descriptorRefs>
                 </configuration>
             </plugin>
         </plugins>
@@ -70,33 +71,6 @@
             <version>1.18.34</version>
             <scope>provided</scope>
         </dependency>
-            <!-- SLF4J API -->
-            <dependency>
-                <groupId>org.slf4j</groupId>
-                <artifactId>slf4j-api</artifactId>
-                <version>2.0.12</version> <!-- Usa la última versión disponible -->
-            </dependency>
-
-            <!-- Log4j 2 SLF4J Binding -->
-            <dependency>
-                <groupId>org.apache.logging.log4j</groupId>
-                <artifactId>log4j-slf4j-impl</artifactId>
-                <version>2.23.1</version> <!-- Usa la última versión de Log4j 2 -->
-            </dependency>
-
-            <!-- Log4j 2 API -->
-            <dependency>
-                <groupId>org.apache.logging.log4j</groupId>
-                <artifactId>log4j-api</artifactId>
-                <version>2.23.1</version>
-            </dependency>
-
-            <!-- Log4j 2 Core -->
-            <dependency>
-                <groupId>org.apache.logging.log4j</groupId>
-                <artifactId>log4j-core</artifactId>
-                <version>2.23.1</version>
-            </dependency>
     </dependencies>
 
     <repositories>

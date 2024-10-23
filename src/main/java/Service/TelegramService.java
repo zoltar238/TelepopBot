@@ -40,16 +40,26 @@ public class TelegramService {
     public TelegramService(TelegramLongPollingBot bot) {
         loadFiles();
         this.bot = bot;
-        // extract description suffix from file
-        try (BufferedReader br = new BufferedReader(new FileReader("src/main/resources/description.txt"))) {
+
+        // Extract description suffix from file
+        InputStream in = getClass().getClassLoader().getResourceAsStream("description.txt");
+
+        try {
+            // Use BufferedReader based on where the file is located
+            BufferedReader br = in != null ?
+                    new BufferedReader(new InputStreamReader(in)) :
+                    new BufferedReader(new FileReader("src/main/resources/description.txt"));
+
             String line;
             while ((line = br.readLine()) != null) {
                 descriptionSuffix += "\n" + line.trim();
             }
+
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Error reading description.txt", e);
         }
     }
+
 
     //sale start
     public void startSale(Update update, String type) {
