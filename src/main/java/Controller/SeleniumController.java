@@ -1,14 +1,11 @@
 package Controller;
 
-import lombok.extern.slf4j.Slf4j;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
 import static Config.BotConfig.properties;
 
-@Slf4j
 public class SeleniumController {
     private Process seleniumProcess;
 
@@ -17,19 +14,23 @@ public class SeleniumController {
         try {
             String seleniumPath = "src/main/resources/selenium-server-4.25.0.jar";
             seleniumProcess = Runtime.getRuntime().exec("java -jar " + seleniumPath + " standalone --max-sessions " + properties.getProperty("BrowserInstances"));
-            new Thread(() -> {
+            Thread startMessage = new Thread(() -> {
                 try (BufferedReader reader = new BufferedReader(new InputStreamReader(seleniumProcess.getInputStream()))) {
                     String line;
                     while ((line = reader.readLine()) != null) {
-                        log.info(line);
+                        System.out.println("Selenium: " + line);
                     }
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-            }).start();
+            });
+            startMessage.start();
 
             // wait until the server has started
-            Thread.sleep(5000);
+            System.out.println("Iniciando el servidor");
+            Thread.sleep(4000);
+            System.out.println("Se ha iniciado el servidor");
+            startMessage.interrupt();
         } catch (IOException e) {
             throw new RuntimeException("Error al iniciar Selenium Grid", e);
         } catch (InterruptedException e) {
@@ -42,5 +43,6 @@ public class SeleniumController {
         if (seleniumProcess != null) {
             seleniumProcess.destroyForcibly();
         }
+        System.out.println("Apagando bot");
     }
 }
