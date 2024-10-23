@@ -253,7 +253,7 @@ public class ItemDAOImp implements ItemDAO {
                 if (file.isDirectory()) {
                     deleteDirectory(file);
                 } else {
-                    if(!file.delete()) return false;
+                    if (!file.delete()) return false;
                 }
             }
         }

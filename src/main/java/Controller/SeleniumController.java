@@ -21,8 +21,6 @@ public class SeleniumController {
                 try (BufferedReader reader = new BufferedReader(new InputStreamReader(seleniumProcess.getInputStream()))) {
                     String line;
                     while ((line = reader.readLine()) != null) {
-                        //System.out.println("Selenium: " + line);
-                        //logger.info("Selenium: {}", line);
                         log.info(line);
                     }
                 } catch (IOException e) {
