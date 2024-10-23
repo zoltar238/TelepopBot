@@ -39,7 +39,7 @@ public class WallapopService {
     }
 
     //start sales process
-    public void startSale(ArrayList<Item> items) {
+    public void publishItems(List<Item> items) {
         String[] hashTags = extractHashTags();
         //detect if chrome is open and kill it
         if (properties.getProperty("KillChrome").equals("true")) {
