@@ -12,9 +12,7 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
@@ -26,9 +24,9 @@ public class TelegramService {
     public Map<String, BufferedImage> downloadedImages = new ConcurrentHashMap<>();
     private final WallapopService wallaService = new WallapopService();
     private final ItemDAOImp itemImp = new ItemDAOImp();
-    private final ArrayList<Item> items = new ArrayList<>();
-    private volatile ArrayList<Item> uploadedItems = new ArrayList<>();
-    private volatile ArrayList<Item> nonUploadedItems = new ArrayList<>();
+    private final List<Item> items = Collections.synchronizedList(new ArrayList<>());
+    private volatile List<Item> uploadedItems = Collections.synchronizedList(new ArrayList<>());
+    private volatile List<Item> nonUploadedItems = Collections.synchronizedList(new ArrayList<>());
     private final java.io.File downloadPath = new java.io.File(properties.getProperty("DownloadPath"));
     private String title;
     private volatile String imagePath;
@@ -80,10 +78,16 @@ public class TelegramService {
         if (nonUploadedItems.isEmpty()) {
             return "Archivos sin subir no detectados";
         } else {
-            wallaService.startSale(nonUploadedItems);
-            nonUploadedItems.clear();
+            Thread thread = new Thread(() -> publishItems(nonUploadedItems));
+            thread.start();
             return "Archivos sin subir detectados, procediendo a subirlos";
         }
+    }
+
+    //publish items
+    public void publishItems(List<Item> items){
+        wallaService.publishItems(items);
+        items.clear();
     }
 
     //verify article info
@@ -212,11 +216,10 @@ public class TelegramService {
     public String finishSale(String status) {
         if (status.equals("imagesUploaded")) {
             imageCounter = 1;
-            wallaService.startSale(items);
-            //add all new items to the uploaded list
             uploadedItems.addAll(items);
             int size = items.size();
-            items.clear();
+            Thread thread = new Thread(() -> publishItems(items));
+            thread.start();
             return "Correcto, se van a subir " + size + " articulos";
         } else if (status.equals("imagesNotUploaded")) {
             return "No se han enviado imagenes";
@@ -253,8 +256,8 @@ public class TelegramService {
             }
         }
         //upload selected items
-        wallaService.startSale(items);
-        items.clear();
+        Thread thread = new Thread(() -> publishItems(items));
+        thread.start();
         return "Se van a resubir " + itemPositions.length + " articulos";
     }
 

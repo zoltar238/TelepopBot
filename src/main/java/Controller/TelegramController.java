@@ -72,6 +72,7 @@ public class TelegramController extends TelegramLongPollingBot {
                     if (nonUploadedItems) {
                         String response = telegramService.scanNonUploadedItems();
                         nonUploadedItems = response.equals("Archivos sin subir detectados, procediendo a subirlos");
+                        sendResponse(update, response);
                         //after uploading all non uploaded item, or no non uploaded items detected, start sales process
                     }
                     if (!nonUploadedItems) {
