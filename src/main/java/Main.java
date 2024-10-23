@@ -3,7 +3,6 @@ import Controller.SeleniumController;
 import Controller.TelegramController;
 import Model.ConfigCheckEnum.ConfigCheckEnum;
 import Util.ConfigChecker;
-import Util.ImageProcessor;
 import View.BadConfigView;
 import View.SystemTrayIcon;
 import lombok.extern.slf4j.Slf4j;
@@ -39,9 +38,6 @@ public class Main {
                 //start telegram bot
                 TelegramBotsApi botsApi = new TelegramBotsApi(DefaultBotSession.class);
                 botsApi.registerBot(new TelegramController());
-                //load downloaded images
-                ImageProcessor processor = new ImageProcessor();
-                processor.loadImages();
                 //create tray icon
                 SystemTrayIcon trayIcon = new SystemTrayIcon();
             } catch (TelegramApiException e) {

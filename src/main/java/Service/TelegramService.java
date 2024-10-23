@@ -2,26 +2,26 @@ package Service;
 
 import DAO.ItemDAOImp;
 import Model.Item;
-import Util.ImageProcessor;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.GetFile;
-import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.File;
 import org.telegram.telegrambots.meta.api.objects.Update;
-import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
-import java.io.*;
-import java.net.URL;
+import java.awt.image.BufferedImage;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Objects;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import static Config.BotConfig.properties;
 
 public class TelegramService {
+    public static final Map<String, BufferedImage> downloadedImages = new ConcurrentHashMap<>();
     private final WallapopService wallaService = new WallapopService();
     private final ItemDAOImp itemImp = new ItemDAOImp();
     private final ArrayList<Item> items = new ArrayList<>();
@@ -29,6 +29,7 @@ public class TelegramService {
     private final ArrayList<Item> nonUploadedItems = new ArrayList<>();
     private final java.io.File downloadPath = new java.io.File(properties.getProperty("DownloadPath"));
     private String title;
+    private volatile String imagePath;
     private int imageCounter = 1;
     private final TelegramLongPollingBot bot;
     private String descriptionSuffix = "";
@@ -38,8 +39,14 @@ public class TelegramService {
 
     // Constructor
     public TelegramService(TelegramLongPollingBot bot) {
+        //load files
         loadFiles();
+
+        //load images
+        loadImages();
+
         this.bot = bot;
+
         // extract description suffix from file
         try (BufferedReader br = new BufferedReader(new FileReader("src/main/resources/description.txt"))) {
             String line;
@@ -52,86 +59,75 @@ public class TelegramService {
     }
 
     //sale start
-    public void startSale(Update update, String type) {
+    public String startSale(String type) {
         if (type.equals("full")) {
-            sendResponse(update, """
+            return """
                     Escribe título y descripción siguiendo el siguiente formato:
                      Titulo:
-                     Descripcion:""");
+                     Descripcion:""";
         } else if (type.equals("title")) {
-            sendResponse(update, "Escribe el título");
-        }
+            return "Escribe el titulo";
+        } else return "Opción incorrecta";
     }
 
     //search for non uploaded items and upload them if they are found
-    public Boolean scanNonUploadedItems(Update update) {
-        sendResponse(update, "Escaneando articulos sin subir");
+    public String scanNonUploadedItems() {
         //if there are non uploaded items, upload them
         if (nonUploadedItems.isEmpty()) {
-            sendResponse(update, "Archivos sin subir no detectados");
-            return false;
+            return "Archivos sin subir no detectados";
         } else {
-            sendResponse(update, "Archivos sin subir detectados, procediendo a subirlos");
             wallaService.startSale(nonUploadedItems);
             nonUploadedItems.clear();
-            return true;
+            return "Archivos sin subir detectados, procediendo a subirlos";
         }
     }
 
-    //sale already started
-    public void saleAlreadyStarted(Update update) {
-        sendResponse(update, "Proceso de venta ya en curso");
-    }
-
     //verify article info
-    public Boolean processInfo(Update update, String message, String saleType) {
+    public String processInfo(String message, String saleType) {
         if (saleType.equals("full")) {
             if (message.contains("Titulo:") && message.contains("Descripcion:")) {
                 //extract title and description from message
-                //todo: change spaces for _ in file name
                 title = message.substring(message.indexOf("Titulo:") + 7, message.indexOf("Descripcion:")).trim();
                 String description = message.substring(message.indexOf("Descripcion:") + 12).trim() + descriptionSuffix;
                 //create new directory for the item
-                return createFile(update, description);
+                return createFile(description);
             } else {
-                sendResponse(update, "Formato incorrecto");
-                return false;
+                return "Formato incorrecto";
             }
         } else if (saleType.equals("title")) {
             //extract title and description from title only
             title = message.trim();
             String description = title + descriptionSuffix;
             //create new directory for the item
-            return createFile(update, description);
+            return createFile(description);
         }
         return null;
     }
 
     //method to create new item folder and info file
-    private Boolean createFile(Update update, String description) {
+    //todo:move to DAO
+    private String createFile(String description) {
         java.io.File directory = new java.io.File(downloadPath.getAbsolutePath() + "\\" + title);
         if (!directory.exists()) {
             //verify if description size is correct
             if (description.length() > 640) {
                 int lengthDiff = description.length() - 640;
-                sendResponse(update, "La descripcion supera en " + lengthDiff + " los caracteres permitidos");
-                return false;
+                return "La descripcion supera en " + lengthDiff + " los caracteres permitidos";
             } else {
-                directory.mkdir();
-                java.io.File file = new java.io.File(directory.getPath() + "\\" + title + ".txt");
-                itemImp.writeInfoFile(file, title, description);
-                items.add(new Item(file));
-                sendResponse(update, "Información recibida, envía imagen/es.");
-                return true;
+                if (directory.mkdir()) {
+                    java.io.File file = new java.io.File(directory.getPath() + "\\" + title + ".txt");
+                    itemImp.writeInfoFile(file, title, description);
+                    items.add(new Item(file));
+                    return "Información recibida, envía imagen/es";
+                } else return "Error al crear la carpeta";
             }
         } else {
-            sendResponse(update, "Ya tienes un articulo con el mismo titulo");
-            return false;
+            return "Ya tienes un articulo con el mismo titulo";
         }
     }
 
-    // verify images
-    public void processImages(Update update, String status) {
+    // processImagnes
+    public String processImage(Update update, String botToken, String status) {
         if (status.equals("correctInfo")) {
             var photos = update.getMessage().getPhoto();
             var photo = photos.getLast();
@@ -141,92 +137,96 @@ public class TelegramService {
                     // get image URL
                     GetFile getFileMethod = new GetFile(fileId);
                     File telegramFile = bot.execute(getFileMethod);
-                    String fileUrl = "https://api.telegram.org/file/bot" + bot.getBotToken() + "/" + telegramFile.getFilePath();
+                    String fileUrl = "https://api.telegram.org/file/bot" + botToken + "/" + telegramFile.getFilePath();
 
                     // download image
-                    String path = downloadPath + "\\" + title + "\\" + title + imageCounter + ".jpg";
+                    imagePath = downloadPath + "\\" + title + "\\" + title + imageCounter + ".jpg";
                     // add image to
-                    items.getLast().addPath(path);
-                    downloadImage(fileUrl, path);
-                    sendResponse(update, "Imagen " + imageCounter + " descargada correctamente");
+                    items.getLast().addPath(imagePath);
                     imageCounter++;
-                    //compare image
-                    ImageProcessor comp = new ImageProcessor();
-
-                    // launch a thread to compare images
-                    CompletableFuture.supplyAsync(() -> comp.compare(path), executor).thenAccept(result -> {
-                        if (!result.equals("noCoincidence")) {
-                            sendResponse(update, result);
-                        }
-                    });
+                    return itemImp.downloadImage(fileUrl, imagePath, imageCounter - 1);
                 } else {
-                    sendResponse(update, "Imagen no descargada, se ha superado el máximo de 10");
+                    return "Imagen no descargada, se ha superado el máximo de 10";
                 }
             } catch (Exception e) {
-                e.printStackTrace();
-                sendResponse(update, "Hubo un problema al descargar la imagen. Inténtalo nuevamente.");
+                System.out.println(e.getMessage());
+                return "Hubo un problema al descargar la imagen. Inténtalo nuevamente";
             }
         } else if (status.equals("incorrectInfo")) {
-            sendResponse(update, "Todavia no has añadido informacion");
+            return "Todavia no has añadido informacion";
         } else {
-            sendResponse(update, "Añade imagenes");
+            return "Añade imagenes";
         }
+    }
+
+    // Compare images
+    public CompletableFuture<String> compareImage() {
+        // launch thread to compare image
+        return CompletableFuture.supplyAsync(() -> itemImp.compareImage(downloadedImages, imagePath), executor)
+                .thenApply(result -> {
+                    if (!result.equals("noCoincidence")) {
+                        return result;
+                    }
+                    return null; // Return null if there is no coincidence
+                });
     }
 
     // process next item
-    public void nextItem(Update update, String status, String saleType) {
+    public String nextItem(String status, String saleType) {
         if (status.equals("imagesUploaded")) {
+            imageCounter = 1;
             if (saleType.equals("full")) {
-                sendResponse(update, """
+                return """
                         Añadre otro articulo:
                         Titulo:
-                        Descripcion:""");
+                        Descripcion:""";
             } else if (saleType.equals("title")) {
-                sendResponse(update, "Escribe el titulo:");
-            }
-            imageCounter = 1;
+                return "Escribe el titulo:";
+            } else return "Comando incorrecto";
         } else if (status.equals("imagesNotUploaded")) {
-            sendResponse(update, "No se han enviado imagenes");
-        }
+            return "No se han enviado imagenes";
+        } else return "Comando no correcto";
     }
 
     //cancel sale
-    public void cancelSale(Update update) {
+    public String cancelSale() {
         if (items.isEmpty()) {
-            sendResponse(update, "Se ha cancelado el proceso de venta");
+            return "Se ha cancelado el proceso de venta";
         } else {
             java.io.File file;
             for (Item item : items) {
                 file = new java.io.File(downloadPath + "\\" + itemImp.readInfoFile(item.getInfoFile())[0]);
-                deleteDirectory(file);
+                if (!itemImp.deleteDirectory(file)) return "Error al borrar los articulos";
             }
-            sendResponse(update, "Se han eliminado " + items.size() + " articulos, vuelve a iniciar proceso de venta");
+            int size = items.size();
             items.clear();
+            return "Se han eliminado " + size + " articulos, vuelve a iniciar proceso de venta";
         }
     }
 
     //finish processing items
-    public void finishSale(Update update, String status) {
+    public String finishSale(String status) {
         if (status.equals("imagesUploaded")) {
             imageCounter = 1;
-            sendResponse(update, "Correcto, se van a subir " + items.size() + " articulos");
             wallaService.startSale(items);
             //add all new items to the uploaded list
             uploadedItems.addAll(items);
+            int size = items.size();
             items.clear();
+            return "Correcto, se van a subir " + size + " articulos";
         } else if (status.equals("imagesNotUploaded")) {
-            sendResponse(update, "No se han enviado imagenes");
-        }
+            return "No se han enviado imagenes";
+        } else return "Comando incorrecto";
     }
 
     //
-    public void saveItems(Update update) {
-        sendResponse(update, "Articulos guardados, se subiran cuando reinicies el programa");
+    public String saveItems() {
         items.clear();
+        return "Articulos guardados, se subiran cuando reinicies el programa";
     }
 
     // send to client all uploaded items
-    public void showUploadedItems(Update update) {
+    public String showUploadedItems() {
         int itemCounter = 1;
         StringBuilder response = new StringBuilder(uploadedItems.size() + " articulos para resubir:\n");
         for (Item item : uploadedItems) {
@@ -234,108 +234,41 @@ public class TelegramService {
             itemCounter++;
         }
         response.append("Escribe el numero de los archivos que quieres que se envien dejando un espacio entre ellos");
-        sendResponse(update, response.toString().trim());
+        return response.toString().trim();
     }
 
     //method to upload again items
-    public void reuploadItems(Update update, String itemNumbers) {
+    public String reuploadItems(String itemNumbers) {
         String[] itemPositions = itemNumbers.split(" ");
         //get selected items
         for (String itemPosition : itemPositions) {
             try {
                 items.add(uploadedItems.get(Integer.parseInt(itemPosition) - 1));
             } catch (NumberFormatException e) {
-                sendResponse(update, "Error de formato al escribir los numeros");
-                return;
+                return "Error de formato al escribir los numeros";
             }
         }
-        sendResponse(update, "Se van a resubir " + itemPositions.length + " articulos");
         //upload selected items
         wallaService.startSale(items);
         items.clear();
-    }
-
-    // respond to client
-    public void sendResponse(Update update, String message) {
-        SendMessage response = new SendMessage();
-        response.setChatId(update.getMessage().getChatId().toString());
-        response.setText(message);
-        try {
-            bot.execute(response);
-        } catch (TelegramApiException e) {
-            e.printStackTrace();
-        }
-    }
-
-    //download images
-    private void downloadImage(String fileUrl, String localPath) throws IOException {
-        URL url = new URL(fileUrl);
-        InputStream in = url.openStream();
-        OutputStream out = new FileOutputStream(localPath);
-
-        byte[] buffer = new byte[2048];
-        int length;
-        while ((length = in.read(buffer)) != -1) {
-            out.write(buffer, 0, length);
-        }
-
-        in.close();
-        out.close();
-    }
-
-    //method for closing the program
-    public void endProgram(Update update) {
-        sendResponse(update, "Cerrando el programa");
-        System.exit(0);
+        return "Se van a resubir " + itemPositions.length + " articulos";
     }
 
     //method for ignored messages
-    public void ignoreMessage(Update update, int messageCount) {
-        sendResponse(update, "Se ha ingnorado el menssaje numero: " + messageCount);
+    public String ignoreMessage(int messageCount) {
+        return "Se ha ingnorado el menssaje numero: " + messageCount;
     }
 
     //preload previously upload files
     public void loadFiles() {
-        String[] items = downloadPath.list();
-        //if item list is not empty check for uploaded items
-        if (items != null) {
-            for (String item : items) {
-                String pathnameInfoFile = downloadPath + "\\" + item + "\\" + item + ".txt";
-                String status = itemImp.readStatus(new java.io.File(pathnameInfoFile));
-                String[] files = Objects.requireNonNull(new java.io.File(downloadPath + "\\" + item).list());
-                String[] uploadedImages = Arrays.copyOfRange(files, 1, files.length);
-                //categorize into uploaded and nonUploaded
-                if (status.equals("subido")) {
-                    // get all files inside directory except for the first
-                    // add absolute path
-                    for (int i = 0; i < uploadedImages.length; i++) {
-                        uploadedImages[i] = downloadPath + "\\" + item + "\\" + uploadedImages[i];
-                    }
-                    uploadedItems.add(new Item(new java.io.File(pathnameInfoFile), new ArrayList<>(Arrays.asList(uploadedImages))));
-                } else {
-                    // get all files inside directory except for the first
-                    // add absolute path
-                    for (int i = 0; i < uploadedImages.length; i++) {
-                        uploadedImages[i] = downloadPath + "\\" + item + "\\" + uploadedImages[i];
-                    }
-                    nonUploadedItems.add(new Item(new java.io.File(pathnameInfoFile), new ArrayList<>(Arrays.asList(uploadedImages))));
-                }
-            }
-        }
+        Thread thread = new Thread(() -> itemImp.loadFiles(downloadPath));
+        thread.start();
     }
 
-    //delete all files inside directory
-    public void deleteDirectory(java.io.File directory) {
-        java.io.File[] files = directory.listFiles();
-        if (files != null) {
-            for (java.io.File file : files) {
-                if (file.isDirectory()) {
-                    deleteDirectory(file);
-                } else {
-                    file.delete();
-                }
-            }
-        }
-        directory.delete();
+    //preload all images
+    private void loadImages() {
+        Thread thread = new Thread(() -> itemImp.loadImages(downloadedImages));
+        thread.start();
     }
+
 }

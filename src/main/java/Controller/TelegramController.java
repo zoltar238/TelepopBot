@@ -1,13 +1,15 @@
 package Controller;
 
 import Service.TelegramService;
-import lombok.extern.slf4j.Slf4j;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
+import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
+import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
+
+import java.util.Objects;
 
 import static Config.BotConfig.properties;
 
-@Slf4j
 public class TelegramController extends TelegramLongPollingBot {
     private final TelegramService telegramService;
     private final String botUsername = properties.getProperty("Username");
@@ -38,16 +40,17 @@ public class TelegramController extends TelegramLongPollingBot {
         if (update.hasMessage()) {
             //ignore first messages
             if (messageCount <= Integer.parseInt(properties.getProperty("MessagesIgnored"))) {
-                telegramService.ignoreMessage(update, messageCount);
+                sendResponse(update, telegramService.ignoreMessage(messageCount));
                 messageCount++;
             }
             //check if message contains image
             else if (update.getMessage().hasPhoto()) {
                 if (correctInfo) {
-                    telegramService.processImages(update, "correctInfo");
+                    sendResponse(update, telegramService.processImage(update, botToken, "correctInfo"));
+                    imageComparer(update);
                     imageUploaded = true;
                 } else {
-                    telegramService.processImages(update, "incorrectInfo");
+                    sendResponse(update, telegramService.processImage(update, botToken, "incorrectInfo"));
                 }
                 //check if message contains text
             } else if (update.getMessage().hasText()) {
@@ -55,9 +58,10 @@ public class TelegramController extends TelegramLongPollingBot {
                 String message = update.getMessage().getText().trim();
                 // end the app
                 if (!saleProcess && !correctInfo && !imageUploaded && message.equals("/apagar")) {
-                    telegramService.endProgram(update);
+                    sendResponse(update, "Cerrando el programa");
+                    System.exit(0);
                 } else if (message.equals("/cancelartodo")) {
-                    telegramService.cancelSale(update);
+                    sendResponse(update, telegramService.cancelSale());
                     correctInfo = false;
                     saleProcess = false;
                     imageUploaded = false;
@@ -66,7 +70,8 @@ public class TelegramController extends TelegramLongPollingBot {
                 else if (!saleProcess && (message.equals("/ventafull") || message.equals("/ventatitulo") || message.equals("/resubir"))) {
                     //when starting the bot, check for non uploaded items, if they exist, upload them
                     if (nonUploadedItems) {
-                        nonUploadedItems = telegramService.scanNonUploadedItems(update);
+                        String response = telegramService.scanNonUploadedItems();
+                        nonUploadedItems = response.equals("Archivos sin subir detectados, procediendo a subirlos");
                         //after uploading all non uploaded item, or no non uploaded items detected, start sales process
                     }
                     if (!nonUploadedItems) {
@@ -77,45 +82,47 @@ public class TelegramController extends TelegramLongPollingBot {
                             saleType = "title";
                         } else {
                             saleType = "reupload";
-                            telegramService.showUploadedItems(update);
+                            sendResponse(update, telegramService.showUploadedItems());
                         }
-                        telegramService.startSale(update, saleType);
+                        sendResponse(update, telegramService.startSale(saleType));
                         saleProcess = true;
                     }
                     //if sales process has started, and command /venta is imputed, send warning message
                 } else if (saleProcess && (message.equals("/ventafull") || message.equals("/ventatitulo"))) {
-                    telegramService.saleAlreadyStarted(update);
+                    sendResponse(update, "Proceso de venta ya en curso");
                     //reupload items
                 } else if (saleProcess && saleType.equals("reupload")) {
-                    telegramService.reuploadItems(update, message);
+                    sendResponse(update, telegramService.reuploadItems(message));
                     saleType = "";
                     saleProcess = false;
                 }//if sales process has started, and info is not correct, check if info is correct
                 else if (saleProcess && !correctInfo) {
-                    correctInfo = telegramService.processInfo(update, message, saleType);
+                    String response = telegramService.processInfo(message, saleType);
+                    sendResponse(update, response);
+                    correctInfo = response.equals("Información recibida, envía imagen/es");
                 } else if (correctInfo) {
                     // add new item with /siguiente
                     switch (message) {
                         case "/siguiente" -> {
                             //check if images where uploaded successfully
                             if (!imageUploaded) {
-                                telegramService.nextItem(update, "imagesNotUploaded", saleType);
+                                sendResponse(update, telegramService.nextItem("imagesNotUploaded", saleType));
                             } else {
                                 correctInfo = false;
                                 imageUploaded = false;
-                                telegramService.nextItem(update, "imagesUploaded", saleType);
+                                sendResponse(update, telegramService.nextItem("imagesUploaded", saleType));
                             }
                         } //end sales process with /finventa
                         case "/finventa" -> {
                             //check if images where uploaded successfully
                             if (!imageUploaded) {
-                                telegramService.finishSale(update, "imagesNotUploaded");
+                                sendResponse(update, telegramService.finishSale("imagesNotUploaded"));
                             } else {
                                 correctInfo = false;
                                 saleProcess = false;
                                 imageUploaded = false;
                                 saleType = "";
-                                telegramService.finishSale(update, "imagesUploaded");
+                                sendResponse(update, telegramService.finishSale("imagesUploaded"));
                             }
                         }//save items to upload them later
                         case "/guardar" -> {
@@ -123,12 +130,34 @@ public class TelegramController extends TelegramLongPollingBot {
                             saleProcess = false;
                             imageUploaded = false;
                             saleType = "";
-                            telegramService.saveItems(update);
+                            sendResponse(update, telegramService.saveItems());
                         }//send warning message if image is expected
-                        default -> telegramService.processImages(update, "noImage");
+                        default -> sendResponse(update, telegramService.processImage(update,  botToken,"noImage"));
                     }
                 }
             }
+        }
+    }
+
+    // get result from image comparison
+    public void imageComparer(Update update) {
+        // call comparer
+        telegramService.compareImage().thenAccept(result -> sendResponse(update, Objects.requireNonNullElse(result, "No se encontraron coincidencias"))).exceptionally(ex -> {
+            sendResponse(update, "Ocurrió un error al comparar imágenes: " + ex.getMessage());
+            return null;
+        });
+    }
+
+
+    // respond to client
+    public void sendResponse(Update update, String message) {
+        SendMessage response = new SendMessage();
+        response.setChatId(update.getMessage().getChatId().toString());
+        response.setText(message);
+        try {
+            this.execute(response);
+        } catch (TelegramApiException e) {
+            System.out.println(e.getMessage());
         }
     }
 }
