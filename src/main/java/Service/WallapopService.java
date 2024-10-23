@@ -4,6 +4,7 @@ import Config.BotConfig;
 import DAO.ItemDAOImp;
 import Model.Item;
 import Model.Page.WallapopUploadPage;
+import io.github.bonigarcia.wdm.WebDriverManager;
 import org.openqa.selenium.Cookie;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
@@ -108,28 +109,12 @@ public class WallapopService {
 
     //initialize web driver
     private WebDriver initializeWebDriver() {
-        String browser = properties.getProperty("WebDriver");
-        switch (browser) {
-            case "Firefox":
-                System.setProperty("webdriver.firefox.driver", "src/main/resources/geckodriver.exe");
-                FirefoxOptions firefoxOptions = new FirefoxOptions();
-                firefoxOptions.setProfile(new FirefoxProfile(new File(properties.getProperty("UserData"))));
-                return new FirefoxDriver(firefoxOptions);
-            case "Chrome":
-                System.setProperty("webdriver.chrome.driver", "src/main/resources/chromedriver.exe");
-                ChromeOptions options = new ChromeOptions();
-                try {
-                    return new RemoteWebDriver(new URL("http://localhost:4444"), options);
-                } catch (MalformedURLException e) {
-                    throw new RuntimeException(e);
-                }
-            case "Edge":
-                System.setProperty("webdriver.edge.driver", "src/main/resources/msedgedriver.exe");
-                EdgeOptions edgeOptions = new EdgeOptions();
-                edgeOptions.addArguments("user-data-dir=" + properties.getProperty("UserData"));
-                return new EdgeDriver(edgeOptions);
-            default:
-                throw new IllegalStateException("Unexpected value: " + browser);
+        WebDriverManager.chromedriver().setup();
+        ChromeOptions options = new ChromeOptions();
+        try {
+            return new RemoteWebDriver(new URL("http://localhost:4444"), options);
+        } catch (MalformedURLException e) {
+            throw new RuntimeException(e);
         }
     }
 
