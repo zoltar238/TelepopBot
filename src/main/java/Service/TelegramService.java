@@ -2,16 +2,18 @@ package Service;
 
 import DAO.ItemDAOImp;
 import Model.Item;
+import org.apache.commons.lang3.tuple.Pair;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.GetFile;
 import org.telegram.telegrambots.meta.api.objects.File;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
 import java.awt.image.BufferedImage;
-import java.io.BufferedReader;
-import java.io.FileReader;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
@@ -21,18 +23,18 @@ import java.util.concurrent.Executors;
 import static Config.BotConfig.properties;
 
 public class TelegramService {
-    public static final Map<String, BufferedImage> downloadedImages = new ConcurrentHashMap<>();
+    public  final Map<String, BufferedImage> downloadedImages = new ConcurrentHashMap<>();
     private final WallapopService wallaService = new WallapopService();
     private final ItemDAOImp itemImp = new ItemDAOImp();
     private final ArrayList<Item> items = new ArrayList<>();
-    private final ArrayList<Item> uploadedItems = new ArrayList<>();
-    private final ArrayList<Item> nonUploadedItems = new ArrayList<>();
+    private volatile ArrayList<Item> uploadedItems = new ArrayList<>();
+    private volatile ArrayList<Item> nonUploadedItems = new ArrayList<>();
     private final java.io.File downloadPath = new java.io.File(properties.getProperty("DownloadPath"));
     private String title;
     private volatile String imagePath;
     private int imageCounter = 1;
     private final TelegramLongPollingBot bot;
-    private String descriptionSuffix = "";
+    private final String descriptionSuffix;
     // implement executor service for background image comparing
     private final ExecutorService executor = Executors.newFixedThreadPool(6);
 
@@ -48,11 +50,13 @@ public class TelegramService {
         this.bot = bot;
 
         // extract description suffix from file
-        try (BufferedReader br = new BufferedReader(new FileReader("src/main/resources/description.txt"))) {
-            String line;
-            while ((line = br.readLine()) != null) {
-                descriptionSuffix += "\n" + line.trim();
-            }
+        try {
+            // Read all lines from file
+            List<String> lines = Files.readAllLines(Paths.get("src/main/resources/description.txt"));
+
+            // Write all lines to string
+            descriptionSuffix = String.join("\n", lines);
+
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -261,7 +265,10 @@ public class TelegramService {
 
     //preload previously upload files
     public void loadFiles() {
-        Thread thread = new Thread(() -> itemImp.loadFiles(downloadPath));
+        Thread thread = new Thread(() -> {
+            Pair<ArrayList<Item>, ArrayList<Item>> loadedItems = itemImp.loadFiles(downloadPath);
+            uploadedItems = loadedItems.getLeft();
+            nonUploadedItems = loadedItems.getRight();});
         thread.start();
     }
 

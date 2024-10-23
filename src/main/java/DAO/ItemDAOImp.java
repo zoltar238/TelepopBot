@@ -2,7 +2,6 @@ package DAO;
 
 import Model.Item;
 import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
 import javax.imageio.ImageIO;
@@ -41,13 +40,13 @@ public class ItemDAOImp implements ItemDAO {
                 }
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            System.out.println(e.getMessage());
         }
         File tempFile = new File(item.getInfoFile().getAbsolutePath() + "Temp");
         try (FileWriter fr = new FileWriter(tempFile)) {
             fr.write(modifiedInfo.toString());
         } catch (IOException e) {
-            e.printStackTrace();
+            System.out.println(e.getMessage());
         }
 
         item.renameFile(tempFile);
