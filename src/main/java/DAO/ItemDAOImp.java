@@ -1,6 +1,6 @@
 package DAO;
 
-import Model.Item;
+import Model.ItemModel;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -8,7 +8,10 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.net.URL;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static Config.BotConfig.properties;
@@ -26,9 +29,9 @@ public class ItemDAOImp implements ItemDAO {
 
 
     @Override
-    public void modifyInfoFile(Item item) {
+    public void modifyInfoFile(ItemModel itemModel) {
         StringBuilder modifiedInfo = new StringBuilder();
-        try (BufferedReader br = new BufferedReader(new FileReader(item.getInfoFile()))) {
+        try (BufferedReader br = new BufferedReader(new FileReader(itemModel.getInfoFile()))) {
             String line;
             while ((line = br.readLine()) != null) {
                 if (line.startsWith("status:")) {
@@ -40,14 +43,14 @@ public class ItemDAOImp implements ItemDAO {
         } catch (IOException e) {
             System.out.println(e.getMessage());
         }
-        File tempFile = new File(item.getInfoFile().getAbsolutePath() + "Temp");
+        File tempFile = new File(itemModel.getInfoFile().getAbsolutePath() + "Temp");
         try (FileWriter fr = new FileWriter(tempFile)) {
             fr.write(modifiedInfo.toString());
         } catch (IOException e) {
             System.out.println(e.getMessage());
         }
 
-        item.renameFile(tempFile);
+        itemModel.renameFile(tempFile);
     }
 
     @Override
@@ -213,10 +216,10 @@ public class ItemDAOImp implements ItemDAO {
     }
 
     @Override
-    public Pair<ArrayList<Item>, ArrayList<Item>> loadFiles(File downloadPath) {
+    public Pair<ArrayList<ItemModel>, ArrayList<ItemModel>> loadFiles(File downloadPath) {
         String[] items = downloadPath.list();
-        ArrayList<Item> uploadedItems = new ArrayList<>();
-        ArrayList<Item> nonUploadedItems = new ArrayList<>();
+        ArrayList<ItemModel> uploadedItemModels = new ArrayList<>();
+        ArrayList<ItemModel> nonUploadedItemModels = new ArrayList<>();
         //if item list is not empty check for uploaded items
         if (items != null) {
             for (String item : items) {
@@ -231,18 +234,18 @@ public class ItemDAOImp implements ItemDAO {
                     for (int i = 0; i < uploadedImages.length; i++) {
                         uploadedImages[i] = downloadPath.getAbsolutePath() + "\\" + item + "\\" + uploadedImages[i];
                     }
-                    uploadedItems.add(new Item(new java.io.File(pathnameInfoFile), new ArrayList<>(Arrays.asList(uploadedImages))));
+                    uploadedItemModels.add(new ItemModel(new java.io.File(pathnameInfoFile), new ArrayList<>(Arrays.asList(uploadedImages))));
                 } else if (status.equals("sinSubir")) {
                     // get all files inside directory except for the first
                     // add absolute path
                     for (int i = 0; i < uploadedImages.length; i++) {
                         uploadedImages[i] = downloadPath.getAbsolutePath() + "\\" + item + "\\" + uploadedImages[i];
                     }
-                    nonUploadedItems.add(new Item(new java.io.File(pathnameInfoFile), new ArrayList<>(Arrays.asList(uploadedImages))));
+                    nonUploadedItemModels.add(new ItemModel(new java.io.File(pathnameInfoFile), new ArrayList<>(Arrays.asList(uploadedImages))));
                 }
             }
         }
-        return new ImmutablePair<>(uploadedItems, nonUploadedItems);
+        return new ImmutablePair<>(uploadedItemModels, nonUploadedItemModels);
     }
 
     @Override

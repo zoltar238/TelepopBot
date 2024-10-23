@@ -1,7 +1,7 @@
 package Service;
 
 import DAO.ItemDAOImp;
-import Model.Item;
+import Model.ItemModel;
 import org.apache.commons.lang3.tuple.Pair;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.GetFile;
@@ -12,7 +12,10 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
@@ -24,9 +27,9 @@ public class TelegramService {
     public Map<String, BufferedImage> downloadedImages = new ConcurrentHashMap<>();
     private final WallapopService wallaService = new WallapopService();
     private final ItemDAOImp itemImp = new ItemDAOImp();
-    private final List<Item> items = Collections.synchronizedList(new ArrayList<>());
-    private volatile List<Item> uploadedItems = Collections.synchronizedList(new ArrayList<>());
-    private volatile List<Item> nonUploadedItems = Collections.synchronizedList(new ArrayList<>());
+    private final List<ItemModel> itemModels = Collections.synchronizedList(new ArrayList<>());
+    private volatile List<ItemModel> uploadedItemModels = Collections.synchronizedList(new ArrayList<>());
+    private volatile List<ItemModel> nonUploadedItemModels = Collections.synchronizedList(new ArrayList<>());
     private final java.io.File downloadPath = new java.io.File(properties.getProperty("DownloadPath"));
     private String title;
     private volatile String imagePath;
@@ -75,19 +78,19 @@ public class TelegramService {
     //search for non uploaded items and upload them if they are found
     public String scanNonUploadedItems() {
         //if there are non uploaded items, upload them
-        if (nonUploadedItems.isEmpty()) {
+        if (nonUploadedItemModels.isEmpty()) {
             return "Archivos sin subir no detectados";
         } else {
-            Thread thread = new Thread(() -> publishItems(nonUploadedItems));
+            Thread thread = new Thread(() -> publishItems(nonUploadedItemModels));
             thread.start();
             return "Archivos sin subir detectados, procediendo a subirlos";
         }
     }
 
     //publish items
-    public void publishItems(List<Item> items){
-        wallaService.publishItems(items);
-        items.clear();
+    public void publishItems(List<ItemModel> itemModels) {
+        wallaService.publishItems(itemModels);
+        itemModels.clear();
     }
 
     //verify article info
@@ -125,7 +128,7 @@ public class TelegramService {
                 if (directory.mkdir()) {
                     java.io.File file = new java.io.File(directory.getPath() + "\\" + title + ".txt");
                     itemImp.writeInfoFile(file, title, description);
-                    items.add(new Item(file));
+                    itemModels.add(new ItemModel(file));
                     return "Información recibida, envía imagen/es";
                 } else return "Error al crear la carpeta";
             }
@@ -150,7 +153,7 @@ public class TelegramService {
                     // download image
                     imagePath = downloadPath + "\\" + title + "\\" + title + imageCounter + ".jpg";
                     // add image to
-                    items.getLast().addPath(imagePath);
+                    itemModels.getLast().addPath(imagePath);
                     imageCounter++;
                     return itemImp.downloadImage(fileUrl, imagePath, imageCounter - 1);
                 } else {
@@ -198,16 +201,16 @@ public class TelegramService {
 
     //cancel sale
     public String cancelSale() {
-        if (items.isEmpty()) {
+        if (itemModels.isEmpty()) {
             return "Se ha cancelado el proceso de venta";
         } else {
             java.io.File file;
-            for (Item item : items) {
-                file = new java.io.File(downloadPath + "\\" + itemImp.readInfoFile(item.getInfoFile())[0]);
+            for (ItemModel itemModel : itemModels) {
+                file = new java.io.File(downloadPath + "\\" + itemImp.readInfoFile(itemModel.getInfoFile())[0]);
                 if (!itemImp.deleteDirectory(file)) return "Error al borrar los articulos";
             }
-            int size = items.size();
-            items.clear();
+            int size = itemModels.size();
+            itemModels.clear();
             return "Se han eliminado " + size + " articulos, vuelve a iniciar proceso de venta";
         }
     }
@@ -216,9 +219,9 @@ public class TelegramService {
     public String finishSale(String status) {
         if (status.equals("imagesUploaded")) {
             imageCounter = 1;
-            uploadedItems.addAll(items);
-            int size = items.size();
-            Thread thread = new Thread(() -> publishItems(items));
+            uploadedItemModels.addAll(itemModels);
+            int size = itemModels.size();
+            Thread thread = new Thread(() -> publishItems(itemModels));
             thread.start();
             return "Correcto, se van a subir " + size + " articulos";
         } else if (status.equals("imagesNotUploaded")) {
@@ -228,16 +231,16 @@ public class TelegramService {
 
     //
     public String saveItems() {
-        items.clear();
+        itemModels.clear();
         return "Articulos guardados, se subiran cuando reinicies el programa";
     }
 
     // send to client all uploaded items
     public String showUploadedItems() {
         int itemCounter = 1;
-        StringBuilder response = new StringBuilder(uploadedItems.size() + " articulos para resubir:\n");
-        for (Item item : uploadedItems) {
-            response.append(itemCounter).append(" ").append(itemImp.readInfoFile(item.getInfoFile())[0]).append("\n");
+        StringBuilder response = new StringBuilder(uploadedItemModels.size() + " articulos para resubir:\n");
+        for (ItemModel itemModel : uploadedItemModels) {
+            response.append(itemCounter).append(" ").append(itemImp.readInfoFile(itemModel.getInfoFile())[0]).append("\n");
             itemCounter++;
         }
         response.append("Escribe el numero de los archivos que quieres que se envien dejando un espacio entre ellos");
@@ -250,13 +253,13 @@ public class TelegramService {
         //get selected items
         for (String itemPosition : itemPositions) {
             try {
-                items.add(uploadedItems.get(Integer.parseInt(itemPosition) - 1));
+                itemModels.add(uploadedItemModels.get(Integer.parseInt(itemPosition) - 1));
             } catch (NumberFormatException e) {
                 return "Error de formato al escribir los numeros";
             }
         }
         //upload selected items
-        Thread thread = new Thread(() -> publishItems(items));
+        Thread thread = new Thread(() -> publishItems(itemModels));
         thread.start();
         return "Se van a resubir " + itemPositions.length + " articulos";
     }
@@ -269,9 +272,9 @@ public class TelegramService {
     //preload previously upload files
     public synchronized void loadFiles() {
         Thread thread = new Thread(() -> {
-            Pair<ArrayList<Item>, ArrayList<Item>> loadedItems = itemImp.loadFiles(downloadPath);
-            uploadedItems = loadedItems.getLeft();
-            nonUploadedItems = loadedItems.getRight();
+            Pair<ArrayList<ItemModel>, ArrayList<ItemModel>> loadedItems = itemImp.loadFiles(downloadPath);
+            uploadedItemModels = loadedItems.getLeft();
+            nonUploadedItemModels = loadedItems.getRight();
         });
         thread.start();
     }

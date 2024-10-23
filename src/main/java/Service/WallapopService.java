@@ -1,32 +1,26 @@
 package Service;
 
-import Config.BotConfig;
+import DAO.HashTagDAOImp;
 import DAO.ItemDAOImp;
-import Model.Item;
+import Model.HashTagFileModel;
+import Model.ItemModel;
 import Model.Page.WallapopUploadPage;
 import io.github.bonigarcia.wdm.WebDriverManager;
 import org.openqa.selenium.Cookie;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
-import org.openqa.selenium.edge.EdgeDriver;
-import org.openqa.selenium.edge.EdgeOptions;
-import org.openqa.selenium.firefox.FirefoxDriver;
-import org.openqa.selenium.firefox.FirefoxOptions;
-import org.openqa.selenium.firefox.FirefoxProfile;
 import org.openqa.selenium.remote.RemoteWebDriver;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.stream.Collectors;
 
 import static Config.BotConfig.properties;
 
@@ -40,8 +34,11 @@ public class WallapopService {
     }
 
     //start sales process
-    public void publishItems(List<Item> items) {
-        String[] hashTags = extractHashTags();
+    public void publishItems(List<ItemModel> itemModels) {
+        //Extract hashtags
+        HashTagFileModel hashTagFileModel = new HashTagFileModel();
+        HashTagDAOImp hashTagDAOImp = new HashTagDAOImp();
+        hashTagFileModel.setHashTags(hashTagDAOImp.extractHashTags());
         //detect if chrome is open and kill it
         if (properties.getProperty("KillChrome").equals("true")) {
             detectedChromeInstance();
@@ -50,7 +47,7 @@ public class WallapopService {
         //get cookies
         Set<Cookie> savedCookies = getCookie();
 
-        for (Item item : items) {
+        for (ItemModel itemModel : itemModels) {
             executor.submit(() -> {
                 WebDriver driver = initializeWebDriver();
                 WallapopUploadPage wallaUpload = new WallapopUploadPage(driver);
@@ -62,7 +59,7 @@ public class WallapopService {
                 driver.navigate().refresh();
 
                 //read info file
-                String[] info = itemImp.readInfoFile(item.getInfoFile()); //{title, description}
+                String[] info = itemImp.readInfoFile(itemModel.getInfoFile()); //{title, description}
 
                 do {
                     wallaUpload.success.set(true);
@@ -77,8 +74,8 @@ public class WallapopService {
                     if (wallaUpload.success.get()) wallaUpload.enterPrice();
                     if (wallaUpload.success.get()) wallaUpload.enterDescription(info[1]);
                     if (wallaUpload.success.get()) wallaUpload.selectCondition();
-                    if (wallaUpload.success.get()) wallaUpload.enterHashTags(hashTags);
-                    if (wallaUpload.success.get()) wallaUpload.uploadImages(item.getPaths());
+                    if (wallaUpload.success.get()) wallaUpload.enterHashTags(hashTagFileModel.getHashTags());
+                    if (wallaUpload.success.get()) wallaUpload.uploadImages(itemModel.getPaths());
                     if (wallaUpload.success.get()) wallaUpload.submit();
                 } while (!wallaUpload.success.get());
 
@@ -88,7 +85,7 @@ public class WallapopService {
                     throw new RuntimeException(e);
                 }
                 //set file status to submitted
-                itemImp.modifyInfoFile(item);
+                itemImp.modifyInfoFile(itemModel);
                 cleanup(driver);
             });
         }
@@ -114,28 +111,6 @@ public class WallapopService {
         try {
             return new RemoteWebDriver(new URL("http://localhost:4444"), options);
         } catch (MalformedURLException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    //extract hashtags from file
-    private String[] extractHashTags() {
-        try {
-            // try to read file from jar
-            InputStream in = BotConfig.class.getClassLoader().getResourceAsStream("hashtags.txt");
-            List<String> lines;
-            if (in != null) {
-                //read all lines from jar
-                try (BufferedReader reader = new BufferedReader(new InputStreamReader(in))) {
-                    lines = reader.lines().collect(Collectors.toList());
-                }
-            } else {
-                // read all lines
-                lines = Files.readAllLines(Paths.get("src/main/resources/hashtags.txt"));
-            }
-            // convert to array
-            return lines.toArray(new String[0]);
-        } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }

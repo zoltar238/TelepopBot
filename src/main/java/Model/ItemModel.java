@@ -8,15 +8,15 @@ import java.util.ArrayList;
 
 @Data
 @NoArgsConstructor
-public class Item {
+public class ItemModel {
     private File infoFile;
     private ArrayList<String> paths = new ArrayList<>();
 
-    public Item(File infoFile) {
+    public ItemModel(File infoFile) {
         this.infoFile = infoFile;
     }
 
-    public Item(File infoFile, ArrayList<String> paths) {
+    public ItemModel(File infoFile, ArrayList<String> paths) {
         this.infoFile = infoFile;
         this.paths = paths;
     }

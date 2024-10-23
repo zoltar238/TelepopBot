@@ -1,6 +1,6 @@
 package DAO;
 
-import Model.Item;
+import Model.ItemModel;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.awt.image.BufferedImage;
@@ -12,7 +12,7 @@ import java.util.Map;
 public interface ItemDAO {
     void writeInfoFile(File file, String title, String description);
 
-    void modifyInfoFile(Item item);
+    void modifyInfoFile(ItemModel itemModel);
 
     String[] readInfoFile(File file);
 
@@ -24,7 +24,7 @@ public interface ItemDAO {
 
     String compareImage(Map<String, BufferedImage> downloadedImages, String imagePath);
 
-    Pair<ArrayList<Item>, ArrayList<Item>> loadFiles(File downloadPath);
+    Pair<ArrayList<ItemModel>, ArrayList<ItemModel>> loadFiles(File downloadPath);
 
     Boolean deleteDirectory(File directory);
 }

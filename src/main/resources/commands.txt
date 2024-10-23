@@ -1,8 +1,8 @@
-resubir - Reañade items previamente subidos
-guardar - Guarda los items
-cancelartodo - Cancela todos los items y los borra
+resubir - Reañade itemModels previamente subidos
+guardar - Guarda los itemModels
+cancelartodo - Cancela todos los itemModels y los borra
 ventafull - Inicio de venta con titulo y descripcion
 ventatitulo - Inicio de venta solo con titulo
-siguiente - Añade el siguiente item
+siguiente - Añade el siguiente itemModel
 finventa - Fin del proceso de venta
 apagar - Termina el programa
