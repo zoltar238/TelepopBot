@@ -38,7 +38,7 @@
         <dependency>
             <groupId>io.github.bonigarcia</groupId>
             <artifactId>webdrivermanager</artifactId>
-            <version>5.9.2</version> <!-- verifica la última versión disponible -->
+            <version>5.8.0</version> <!-- verifica la última versión disponible -->
         </dependency>
         <dependency>
             <groupId>org.telegram</groupId>
