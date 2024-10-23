@@ -1,5 +1,6 @@
 package Service;
 
+import Config.BotConfig;
 import DAO.ItemDAOImp;
 import Model.Item;
 import Model.Page.WallapopUploadPage;
@@ -14,10 +15,7 @@ import org.openqa.selenium.firefox.FirefoxOptions;
 import org.openqa.selenium.firefox.FirefoxProfile;
 import org.openqa.selenium.remote.RemoteWebDriver;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Files;
@@ -27,6 +25,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
 
 import static Config.BotConfig.properties;
 
@@ -137,8 +136,19 @@ public class WallapopService {
     //extract hashtags from file
     private String[] extractHashTags() {
         try {
-            // read entire file and return array of hashtags.txt
-            List<String> lines = Files.readAllLines(Paths.get("src/main/resources/hashtags.txt"));
+            // try to read file from jar
+            InputStream in = BotConfig.class.getClassLoader().getResourceAsStream("hashtags.txt");
+            List<String> lines;
+            if (in != null) {
+                //read all lines from jar
+                try (BufferedReader reader = new BufferedReader(new InputStreamReader(in))) {
+                    lines = reader.lines().collect(Collectors.toList());
+                }
+            } else {
+                // read all lines
+                lines = Files.readAllLines(Paths.get("src/main/resources/hashtags.txt"));
+            }
+            // convert to array
             return lines.toArray(new String[0]);
         } catch (IOException e) {
             throw new RuntimeException(e);

@@ -11,7 +11,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import static Config.BotConfig.properties;
 
-@Slf4j
+
 public class WallapopUploadPage {
 
     WebDriver driver;
@@ -76,8 +76,8 @@ public class WallapopUploadPage {
     //open category item box
     public void selectCategory() {
         clickButton(categorySelectorLabel, "Caja de categorías abierta correctamente", "No se ha encontrado la caja de categorías");
-        clickButton(firstSubcategoryOption, "d", ",");
-        clickButton(secondSubcategoryOption, "d", ",");
+        clickButton(firstSubcategoryOption, "Categoria selecionada correctamente", "No se pudo seleccionar la categoria");
+        clickButton(secondSubcategoryOption, "Subcategoria seleccianada correctamente", "No se pudo seleccionar la subcategoria");
     }
 
     //enter price
@@ -92,8 +92,8 @@ public class WallapopUploadPage {
 
     //select condition
     public void selectCondition() {
-        clickButton(conditionSelector, "bien", "mal");
-        clickButton(conditionSelectorOption, "bien", "mal");
+        clickButton(conditionSelector, "Menu de condicion abierto correctamente", "No se pudo abrir el menu de condicion");
+        clickButton(conditionSelectorOption, "Condicion seleccionada correctamente", "No se pudo selecionar la condicion");
     }
 
     //enter hashtags
@@ -115,7 +115,7 @@ public class WallapopUploadPage {
             try {
                 Thread.sleep(Long.parseLong(properties.getProperty("ImageUploadWaitTime")));
             } catch (InterruptedException e) {
-                log.error("Error during image upload wait time");
+                System.out.println("Error during image upload wait time");
             }
         }
     }
@@ -131,10 +131,10 @@ public class WallapopUploadPage {
             WebElement textField = wait.until(ExpectedConditions.visibilityOfElementLocated(locator));
             textField.sendKeys(text);
             textField.sendKeys(Keys.RETURN);
-            log.info(successMessage);
+            System.out.println(successMessage);
         } catch (TimeoutException e) {
             success.set(false);
-            log.error(errorMessage);
+            System.out.println(errorMessage);
         }
     }
 
@@ -147,37 +147,35 @@ public class WallapopUploadPage {
                 // Esperar hasta que el elemento sea clicable
                 WebElement button = wait.until(ExpectedConditions.elementToBeClickable(locator));
                 button.click();
-                log.info(successMessage);
+                System.out.println(successMessage);
                 return;  // Si tiene éxito, salir del método
             } catch (TimeoutException e) {
-                System.out.println("TimeoutException: No se ha podido clickar en el intento " + (attempts + 1));
-                log.warn("{} Intento: {}", errorMessage, attempts + 1);
+                System.out.println(errorMessage);
             } catch (NoSuchElementException e) {
-                System.out.println("NoSuchElementException: El elemento no se encontró en el DOM.");
-                log.warn("No se encontró el elemento: {}", errorMessage);
+                System.out.println(errorMessage);
             } catch (ElementClickInterceptedException e) {
                 System.out.println("ElementClickInterceptedException: El clic fue interceptado por otro elemento.");
-                log.warn("El clic fue interceptado: {}", errorMessage);
+                System.out.println(errorMessage);
                 success.set(false);
             } catch (ElementNotInteractableException e) {
                 System.out.println("ElementNotInteractableException: El elemento no es interactuable.");
-                log.warn("El elemento no es interactuable: {}", errorMessage);
+                System.out.println(errorMessage);
                 success.set(false);
             } catch (InvalidElementStateException e) {
                 System.out.println("InvalidElementStateException: El estado del elemento no permite la interacción.");
-                log.warn("El estado del elemento no permite la interacción: {}", errorMessage);
+                System.out.println(errorMessage);
                 success.set(false);
             } catch (StaleElementReferenceException e) {
                 System.out.println("StaleElementReferenceException: El elemento ya no es válido (puede haber sido recargado).");
-                log.warn("El elemento ya no es válido o ha sido recargado: {}", errorMessage);
+                System.out.println(errorMessage);
                 success.set(false);
             } catch (WebDriverException e) {
                 System.out.println("WebDriverException: Un error genérico de WebDriver ha ocurrido.");
-                log.warn("Un error de WebDriver ha ocurrido: {}", errorMessage);
+                System.out.println(errorMessage);
                 success.set(false);
             } catch (Exception e) {
                 System.out.println("Exception: Se produjo una excepción no esperada: " + e.getMessage());
-                log.warn("Excepción no esperada: {}", e.getMessage());
+                System.out.println(errorMessage);
                 success.set(false);
             }
 

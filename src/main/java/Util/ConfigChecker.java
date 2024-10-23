@@ -2,10 +2,7 @@ package Util;
 
 import Model.ConfigCheckEnum.ConfigCheckEnum;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -74,24 +71,38 @@ public class ConfigChecker {
     // Check hashtags and add result to the map
     private void checkHashtags(Map<ConfigCheckEnum, Boolean> configResults) {
         int lineCounter = 0;
-        try (BufferedReader reader = new BufferedReader(new FileReader("src/main/resources/hashtags.txt"))) {
+
+        // Try to load the file from the classpath (for JAR execution)
+        InputStream in = getClass().getClassLoader().getResourceAsStream("hashtags.txt");
+
+        try (BufferedReader reader = in != null ?
+                // If the file is found in the classpath (inside JAR), use an InputStreamReader
+                new BufferedReader(new InputStreamReader(in)) :
+                // Otherwise, fallback to reading from the file system (for development)
+                new BufferedReader(new FileReader("src/main/resources/hashtags.txt"))) {
+
             String line;
             while ((line = reader.readLine()) != null) {
+                // Check if the line contains a hashtag character
                 if (line.contains("#")) {
                     configResults.put(ConfigCheckEnum.NO_HASH_CHAR_ALLOWED, false);
-                    return;
+                    return; // Exit early if a hashtag is found
                 }
                 lineCounter++;
             }
+
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Error reading hashtags.txt", e);
         }
+
+        // Determine the result based on the number of lines
         if (lineCounter <= 5) {
             configResults.put(ConfigCheckEnum.HASHTAGS_OK, true);
         } else {
             configResults.put(ConfigCheckEnum.HASHTAGS_EXCEED_MAX, false);
         }
     }
+
 
     // Check MessagesIgnored (must be a valid integer) and add result to the map
     private void checkMessagesIgnored(Map<ConfigCheckEnum, Boolean> configResults) {
