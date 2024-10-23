@@ -8,10 +8,8 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static Config.BotConfig.properties;
 
@@ -116,7 +114,8 @@ public class ItemDAOImp implements ItemDAO {
     }
 
     @Override
-    public void loadImages(Map<String, BufferedImage> downloadedImages) {
+    public Map<String, BufferedImage> loadImages() {
+        Map<String, BufferedImage> downloadedImages = new ConcurrentHashMap<>();
         File downloadDirectory = new File(properties.getProperty("DownloadPath"));
         File[] items = downloadDirectory.listFiles();
         if (items != null) {
@@ -136,6 +135,7 @@ public class ItemDAOImp implements ItemDAO {
                 }
             }
         }
+        return downloadedImages;
     }
 
     @Override
@@ -220,23 +220,23 @@ public class ItemDAOImp implements ItemDAO {
         //if item list is not empty check for uploaded items
         if (items != null) {
             for (String item : items) {
-                String pathnameInfoFile = downloadPath + "\\" + item + "\\" + item + ".txt";
+                String pathnameInfoFile = downloadPath.getAbsolutePath() + "\\" + item + "\\" + item + ".txt";
                 String status = readStatus(new java.io.File(pathnameInfoFile));
-                String[] files = Objects.requireNonNull(new java.io.File(downloadPath + "\\" + item).list());
+                String[] files = Objects.requireNonNull(new java.io.File(downloadPath.getAbsolutePath() + "\\" + item).list());
                 String[] uploadedImages = Arrays.copyOfRange(files, 1, files.length);
                 //categorize into uploaded and nonUploaded
                 if (status.equals("subido")) {
                     // get all files inside directory except for the first
                     // add absolute path
                     for (int i = 0; i < uploadedImages.length; i++) {
-                        uploadedImages[i] = downloadPath + "\\" + item + "\\" + uploadedImages[i];
+                        uploadedImages[i] = downloadPath.getAbsolutePath() + "\\" + item + "\\" + uploadedImages[i];
                     }
                     uploadedItems.add(new Item(new java.io.File(pathnameInfoFile), new ArrayList<>(Arrays.asList(uploadedImages))));
-                } else {
+                } else if (status.equals("sinSubir")) {
                     // get all files inside directory except for the first
                     // add absolute path
                     for (int i = 0; i < uploadedImages.length; i++) {
-                        uploadedImages[i] = downloadPath + "\\" + item + "\\" + uploadedImages[i];
+                        uploadedImages[i] = downloadPath.getAbsolutePath() + "\\" + item + "\\" + uploadedImages[i];
                     }
                     nonUploadedItems.add(new Item(new java.io.File(pathnameInfoFile), new ArrayList<>(Arrays.asList(uploadedImages))));
                 }
