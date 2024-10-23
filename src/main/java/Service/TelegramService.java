@@ -23,7 +23,7 @@ import java.util.concurrent.Executors;
 import static Config.BotConfig.properties;
 
 public class TelegramService {
-    public final Map<String, BufferedImage> downloadedImages = new ConcurrentHashMap<>();
+    public Map<String, BufferedImage> downloadedImages = new ConcurrentHashMap<>();
     private final WallapopService wallaService = new WallapopService();
     private final ItemDAOImp itemImp = new ItemDAOImp();
     private final ArrayList<Item> items = new ArrayList<>();
@@ -264,7 +264,7 @@ public class TelegramService {
     }
 
     //preload previously upload files
-    public void loadFiles() {
+    public synchronized void loadFiles() {
         Thread thread = new Thread(() -> {
             Pair<ArrayList<Item>, ArrayList<Item>> loadedItems = itemImp.loadFiles(downloadPath);
             uploadedItems = loadedItems.getLeft();
@@ -274,8 +274,8 @@ public class TelegramService {
     }
 
     //preload all images
-    private void loadImages() {
-        Thread thread = new Thread(() -> itemImp.loadImages(downloadedImages));
+    private synchronized void loadImages() {
+        Thread thread = new Thread(() -> downloadedImages = itemImp.loadImages());
         thread.start();
     }
 

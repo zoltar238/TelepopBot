@@ -20,7 +20,7 @@ public interface ItemDAO {
 
     String downloadImage(String fileUrl, String localPath, int imageCounter) throws IOException;
 
-    void loadImages(Map<String, BufferedImage> downloadedImages);
+    Map<String, BufferedImage> loadImages();
 
     String compareImage(Map<String, BufferedImage> downloadedImages, String imagePath);
 
