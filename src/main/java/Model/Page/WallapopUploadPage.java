@@ -140,17 +140,15 @@ public class WallapopUploadPage {
     // method for clicking buttons
     private void clickButton(By locator, String successMessage, String errorMessage) {
         int maxAttempts = 2;
-        success.set(true); // Reiniciar success en true antes del intento de clic
+        success.set(true); // reset success before attempting to click
         for (int attempts = 0; attempts < maxAttempts; attempts++) {
             try {
-                // Esperar hasta que el elemento sea clicable
+                // wait until the element is clickable
                 WebElement button = wait.until(ExpectedConditions.elementToBeClickable(locator));
                 button.click();
                 System.out.println(successMessage);
-                return;  // Si tiene éxito, salir del método
-            } catch (TimeoutException e) {
-                System.out.println(errorMessage);
-            } catch (NoSuchElementException e) {
+                return; //exit if successful
+            } catch (TimeoutException | NoSuchElementException e) {
                 System.out.println(errorMessage);
             } catch (ElementClickInterceptedException e) {
                 System.out.println("ElementClickInterceptedException: El clic fue interceptado por otro elemento.");
@@ -178,11 +176,11 @@ public class WallapopUploadPage {
                 success.set(false);
             }
 
-            // Si no tuvo éxito en este intento, marcar success como false
+            // Set success status as false
             success.set(false);
         }
 
-        // Si después de todos los intentos no tiene éxito, asegurarse de que success es false
+        // Set success status as false
         success.set(false);
     }
 
