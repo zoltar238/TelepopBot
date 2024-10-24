@@ -49,7 +49,6 @@ public class ItemDAOImp implements ItemDAO {
         } catch (IOException e) {
             System.out.println(e.getMessage());
         }
-
         itemModel.renameFile(tempFile);
     }
 

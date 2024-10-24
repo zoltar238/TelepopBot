@@ -14,17 +14,7 @@ public class SeleniumController {
         try {
             String seleniumPath = "src/main/resources/selenium-server-4.25.0.jar";
             seleniumProcess = Runtime.getRuntime().exec("java -jar " + seleniumPath + " standalone --max-sessions " + properties.getProperty("BrowserInstances"));
-            Thread startMessage = new Thread(() -> {
-                try (BufferedReader reader = new BufferedReader(new InputStreamReader(seleniumProcess.getInputStream()))) {
-                    String line;
-                    while ((line = reader.readLine()) != null) {
-                        System.out.println("Selenium: " + line);
-                    }
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            });
-            startMessage.start();
+            Thread startMessage = getStartMessage();
 
             // wait until the server has started
             System.out.println("Iniciando el servidor");
@@ -36,6 +26,21 @@ public class SeleniumController {
         } catch (InterruptedException e) {
             throw new RuntimeException("Error al esperar la inicialización de Selenium Grid", e);
         }
+    }
+
+    private Thread getStartMessage() {
+        Thread startMessage = new Thread(() -> {
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(seleniumProcess.getInputStream()))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    System.out.println("Selenium: " + line);
+                }
+            } catch (IOException e) {
+                System.out.println(e.getMessage());
+            }
+        });
+        startMessage.start();
+        return startMessage;
     }
 
     //shut down selenium grid
