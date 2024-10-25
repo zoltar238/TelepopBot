@@ -57,7 +57,7 @@ public class TelegramService {
 
         // extract description suffix from file
         DescriptionDAOImp descriptionDAOImp = new DescriptionDAOImp();
-        descriptionSuffix = descriptionDAOImp.getDescription(descriptionPath);
+        descriptionSuffix = "\n" + descriptionDAOImp.getDescription(descriptionPath);
     }
 
     //sale start
@@ -96,7 +96,7 @@ public class TelegramService {
             if (message.contains("Titulo:") && message.contains("Descripcion:")) {
                 //extract title and description from message
                 title = message.substring(message.indexOf("Titulo:") + 7, message.indexOf("Descripcion:")).trim();
-                String description = message.substring(message.indexOf("Descripcion:") + 12).trim() + "\n" + descriptionSuffix;
+                String description = message.substring(message.indexOf("Descripcion:") + 12).trim() + System.lineSeparator() + descriptionSuffix;
                 //create new directory for the item
                 return createFile(description);
             } else {
