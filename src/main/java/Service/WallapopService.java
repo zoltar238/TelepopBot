@@ -95,6 +95,8 @@ public class WallapopService {
         ChromeOptions chromeOptions = new ChromeOptions();
         chromeOptions.addArguments("user-data-dir=" + properties.getProperty("UserData"));
         chromeOptions.addArguments("profile-directory=" + properties.getProperty("Profile"));
+        chromeOptions.addArguments("--headless"); // headless mode
+        chromeOptions.addArguments("--disable-gpu"); //disable gpu for faster loading
         WebDriver driver = new ChromeDriver(chromeOptions);
 
         driver.get("https://es.wallapop.com");
