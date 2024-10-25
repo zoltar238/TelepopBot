@@ -143,11 +143,16 @@ public class TelegramController extends TelegramLongPollingBot {
     // get result from image comparison
     public void imageComparer(Update update) {
         // call comparer
-        telegramService.compareImage().thenAccept(result -> sendResponse(update, Objects.requireNonNullElse(result, "No se encontraron coincidencias"))).exceptionally(ex -> {
+        telegramService.compareImage().thenAccept(result -> {
+            if (!result.equals("noCoincidence")) { // verify if not null
+                sendResponse(update, result);
+            }
+        }).exceptionally(ex -> {
             sendResponse(update, "Ocurrió un error al comparar imágenes: " + ex.getMessage());
             return null;
         });
     }
+
 
 
     // respond to client

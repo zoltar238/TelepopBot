@@ -1,5 +1,6 @@
 package Service;
 
+import DAO.DescriptionDAOImp;
 import DAO.ItemDAOImp;
 import Model.ItemModel;
 import org.apache.commons.lang3.tuple.Pair;
@@ -9,9 +10,6 @@ import org.telegram.telegrambots.meta.api.objects.File;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
 import java.awt.image.BufferedImage;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -50,17 +48,16 @@ public class TelegramService {
 
         this.bot = bot;
 
+        //check existence of description file
+        java.io.File file = new java.io.File("src/main/resources/description.txt");
+        String descriptionPath;
+        if (file.exists()) {
+            descriptionPath = "src/main/resources/description.txt";
+        } else descriptionPath = "src/main/description.txt";
+
         // extract description suffix from file
-        try {
-            // Read all lines from file
-            List<String> lines = Files.readAllLines(Paths.get("src/main/resources/description.txt"));
-
-            // Write all lines to string
-            descriptionSuffix = String.join("\n", lines);
-
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        DescriptionDAOImp descriptionDAOImp = new DescriptionDAOImp();
+        descriptionSuffix = descriptionDAOImp.getDescription(descriptionPath);
     }
 
     //sale start
@@ -99,7 +96,7 @@ public class TelegramService {
             if (message.contains("Titulo:") && message.contains("Descripcion:")) {
                 //extract title and description from message
                 title = message.substring(message.indexOf("Titulo:") + 7, message.indexOf("Descripcion:")).trim();
-                String description = message.substring(message.indexOf("Descripcion:") + 12).trim() + descriptionSuffix;
+                String description = message.substring(message.indexOf("Descripcion:") + 12).trim() + "\n" + descriptionSuffix;
                 //create new directory for the item
                 return createFile(description);
             } else {
@@ -174,12 +171,7 @@ public class TelegramService {
     public CompletableFuture<String> compareImage() {
         // launch thread to compare image
         return CompletableFuture.supplyAsync(() -> itemImp.compareImage(downloadedImages, imagePath), executor)
-                .thenApply(result -> {
-                    if (!result.equals("noCoincidence")) {
-                        return result;
-                    }
-                    return null; // Return null if there is no coincidence
-                });
+                .thenApply(result -> result);
     }
 
     // process next item

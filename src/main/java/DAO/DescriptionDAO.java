@@ -5,5 +5,5 @@ import java.io.File;
 
 public interface DescriptionDAO {
 
-    String getDescription(File file);
+    String getDescription(String path);
 }
