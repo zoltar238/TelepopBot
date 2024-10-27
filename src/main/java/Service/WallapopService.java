@@ -49,6 +49,9 @@ public class WallapopService {
 
         for (ItemModel itemModel : itemModels) {
             executor.submit(() -> {
+                //read info file
+                String[] info = itemImp.readInfoFile(itemModel.getInfoFile()); //{title, description}
+
                 WebDriver driver = initializeWebDriver();
                 WallapopUploadPage wallaUpload = new WallapopUploadPage(driver);
                 driver.manage().window().maximize();
@@ -57,9 +60,6 @@ public class WallapopService {
                 //load cookies to driver
                 savedCookies.forEach(cookie -> driver.manage().addCookie(cookie));
                 driver.navigate().refresh();
-
-                //read info file
-                String[] info = itemImp.readInfoFile(itemModel.getInfoFile()); //{title, description}
 
                 do {
                     wallaUpload.success.set(true);
@@ -76,7 +76,7 @@ public class WallapopService {
                     if (wallaUpload.success.get()) wallaUpload.selectCondition();
                     if (wallaUpload.success.get()) wallaUpload.enterHashTags(hashTagFileModel.getHashTags());
                     if (wallaUpload.success.get()) wallaUpload.uploadImages(itemModel.getPaths());
-                    if (wallaUpload.success.get()) wallaUpload.submit();
+                    if (wallaUpload.success.get()) wallaUpload.submit(info[0]);
                 } while (!wallaUpload.success.get());
 
                 try {
@@ -109,9 +109,11 @@ public class WallapopService {
     //initialize web driver
     private WebDriver initializeWebDriver() {
         WebDriverManager.chromedriver().setup();
-        ChromeOptions options = new ChromeOptions();
+        ChromeOptions chromeOptions = new ChromeOptions();
+        //chromeOptions.addArguments("--headless"); // headless mode
+        //chromeOptions.addArguments("--disable-gpu"); //disable gpu for faster loading
         try {
-            return new RemoteWebDriver(new URL("http://localhost:4444"), options);
+            return new RemoteWebDriver(new URL("http://localhost:4444"), chromeOptions);
         } catch (MalformedURLException e) {
             throw new RuntimeException(e);
         }

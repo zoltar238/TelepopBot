@@ -34,7 +34,8 @@ public class Main {
         } else {
             try {
                 //launch selenium server
-                seleniumController.startSelenium();
+                Thread seleniumThread = new Thread(launchSelenium(seleniumController));
+                seleniumThread.start();
                 //start telegram bot
                 TelegramBotsApi botsApi = new TelegramBotsApi(DefaultBotSession.class);
                 botsApi.registerBot(new TelegramController());
@@ -46,7 +47,18 @@ public class Main {
         }
 
         //shutdown selenium grid on exit
-        Runtime.getRuntime().addShutdownHook(new Thread(seleniumController::shutDownSelenium));
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            seleniumController.shutDownSelenium();
+            System.out.println("Bot apagado");
+        }));
+    }
+
+    private static Runnable launchSelenium(SeleniumController seleniumController) {
+        return () -> {
+            System.out.println("Iniciando el servidor");
+            seleniumController.startSelenium();
+            System.out.println("\nSe ha iniciado el servidor");
+        };
     }
 }
 

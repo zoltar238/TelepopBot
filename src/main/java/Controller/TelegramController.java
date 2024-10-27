@@ -6,8 +6,6 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
-import java.util.Objects;
-
 import static Config.BotConfig.properties;
 
 public class TelegramController extends TelegramLongPollingBot {
@@ -152,7 +150,6 @@ public class TelegramController extends TelegramLongPollingBot {
             return null;
         });
     }
-
 
 
     // respond to client
