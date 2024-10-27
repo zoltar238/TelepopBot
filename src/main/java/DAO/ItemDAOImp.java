@@ -2,17 +2,14 @@ package DAO;
 
 import Model.ItemModel;
 import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.Pair;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import static Config.BotConfig.properties;
 
@@ -215,10 +212,10 @@ public class ItemDAOImp implements ItemDAO {
     }
 
     @Override
-    public Pair<ArrayList<ItemModel>, ArrayList<ItemModel>> loadFiles(File downloadPath) {
+    public ImmutablePair<List<ItemModel>, List<ItemModel>> loadFiles(File downloadPath) {
         String[] items = downloadPath.list();
-        ArrayList<ItemModel> uploadedItemModels = new ArrayList<>();
-        ArrayList<ItemModel> nonUploadedItemModels = new ArrayList<>();
+        List<ItemModel> uploadedItemModels = new CopyOnWriteArrayList<>();
+        List<ItemModel> nonUploadedItemModels = new CopyOnWriteArrayList<>();
         //if item list is not empty check for uploaded items
         if (items != null) {
             for (String item : items) {

@@ -17,7 +17,6 @@ public class WallapopUploadPage {
     WebDriverWait wait;
     JavascriptExecutor js;
 
-
     private final By acceptCookies = new By.ByCssSelector("#onetrust-accept-btn-handler");
     private final By productTypeOption = By.xpath("//span[text()='Algo que ya no necesito']");
     private final By titleInputField = By.id("title");
@@ -49,7 +48,7 @@ public class WallapopUploadPage {
             WebElement cookieButton = wait.until(ExpectedConditions.presenceOfElementLocated(acceptCookies));
             if (cookieButton != null && cookieButton.isDisplayed()) {
                 // Si el botón está presente y visible, intentar hacer clic
-                clickButton(acceptCookies, "Se han aceptado las cookies correctamente", "Las cookies ya estaban aceptadas");
+                clickButton(acceptCookies, "Las cookies ya estaban aceptadas");
             }
         } catch (TimeoutException e) {
             // Si no se encuentra el botón dentro del tiempo, se captura la excepción y se omite el clic
@@ -59,12 +58,12 @@ public class WallapopUploadPage {
     //select product type
     public void selectProductType() {
         wait = new WebDriverWait(driver, Duration.ofSeconds(2));
-        clickButton(productTypeOption, "Tipo de producto seleccionado correctamente", "No se ha encontrado el botón de tipo de producto");
+        clickButton(productTypeOption, "No se ha encontrado el botón de tipo de producto");
     }
 
     //enter title
     public void enterTitle(String title) {
-        enterText(titleInputField, title, "Título insertado correctamente", "No se ha encontrado la caja de texto del título");
+        enterText(titleInputField, title);
         try {
             Thread.sleep(150);
         } catch (InterruptedException e) {
@@ -74,33 +73,33 @@ public class WallapopUploadPage {
 
     //open category item box
     public void selectCategory() {
-        clickButton(categorySelectorLabel, "Caja de categorías abierta correctamente", "No se ha encontrado la caja de categorías");
-        clickButton(firstSubcategoryOption, "Categoria selecionada correctamente", "No se pudo seleccionar la categoria");
-        clickButton(secondSubcategoryOption, "Subcategoria seleccianada correctamente", "No se pudo seleccionar la subcategoria");
+        clickButton(categorySelectorLabel, "No se ha encontrado la caja de categorías");
+        clickButton(firstSubcategoryOption, "No se pudo seleccionar la categoria");
+        clickButton(secondSubcategoryOption, "No se pudo seleccionar la subcategoria");
     }
 
     //enter price
     public void enterPrice() {
-        enterText(priceInputField, "1", "Precio añadido correctamente", "No se pudo añadir el precio");
+        enterText(priceInputField, "1");
     }
 
     //enter description
     public void enterDescription(String description) {
-        enterText(descriptionInputField, description, "Descripción añadida correctamente", "No se pudo añadir la descripción");
+        enterText(descriptionInputField, description);
     }
 
     //select condition
     public void selectCondition() {
-        clickButton(conditionSelector, "Menu de condicion abierto correctamente", "No se pudo abrir el menu de condicion");
-        clickButton(conditionSelectorOption, "Condicion seleccionada correctamente", "No se pudo selecionar la condicion");
+        clickButton(conditionSelector, "No se pudo abrir el menu de condicion");
+        clickButton(conditionSelectorOption, "No se pudo selecionar la condicion");
     }
 
     //enter hashtags
     public void enterHashTags(String[] hashTags) {
         for (String hashTag : hashTags) {
-            enterText(hashTagsInputField, hashTag, "Hashtag escrito correctamente", "No se pudo escribir el hashtag");
-            clickButton(hastTagsCheckBox, "Check seleccionado correctamente", "No se pudo seleccionar el check");
-            clickButton(body, "Se ha añadido un hashtag correctamente", "No se pudo añadir el hashtag");
+            enterText(hashTagsInputField, hashTag);
+            clickButton(hastTagsCheckBox, "No se pudo seleccionar el check");
+            clickButton(body, "No se pudo añadir el hashtag");
         }
     }
 
@@ -120,25 +119,28 @@ public class WallapopUploadPage {
     }
 
     //submit item
-    public void submit() {
-        clickButton(submitButtonSelector, "Item añadido correctamente", "No se pudo añadir el item");
+    public void submit(String name) {
+        clickButton(submitButtonSelector, "No se pudo añadir el item");
+
+        String ANSI_GREEN = "\u001B[32m";
+        String ANSI_RESET = "\u001B[0m";
+
+        System.out.println(ANSI_GREEN + name + " añadido correctamente" + ANSI_RESET);
     }
 
     // method for entering text inside a text box
-    private void enterText(By locator, String text, String successMessage, String errorMessage) {
+    private void enterText(By locator, String text) {
         try {
             WebElement textField = wait.until(ExpectedConditions.visibilityOfElementLocated(locator));
             textField.sendKeys(text);
             textField.sendKeys(Keys.RETURN);
-            System.out.println(successMessage);
         } catch (TimeoutException e) {
             success.set(false);
-            System.out.println(errorMessage);
         }
     }
 
     // method for clicking buttons
-    private void clickButton(By locator, String successMessage, String errorMessage) {
+    private void clickButton(By locator, String errorMessage) {
         int maxAttempts = 2;
         success.set(true); // reset success before attempting to click
         for (int attempts = 0; attempts < maxAttempts; attempts++) {
@@ -146,13 +148,8 @@ public class WallapopUploadPage {
                 // wait until the element is clickable
                 WebElement button = wait.until(ExpectedConditions.elementToBeClickable(locator));
                 button.click();
-                System.out.println(successMessage);
                 return; //exit if successful
-            } catch (TimeoutException | NoSuchElementException e) {
-                System.out.println(errorMessage);
-            } catch (ElementClickInterceptedException e) {
-                System.out.println("ElementClickInterceptedException: El clic fue interceptado por otro elemento.");
-                System.out.println(errorMessage);
+            } catch (TimeoutException | NoSuchElementException | ElementClickInterceptedException e) {
                 success.set(false);
             } catch (ElementNotInteractableException e) {
                 System.out.println("ElementNotInteractableException: El elemento no es interactuable.");
