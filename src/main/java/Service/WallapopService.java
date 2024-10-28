@@ -110,8 +110,6 @@ public class WallapopService {
     private WebDriver initializeWebDriver() {
         WebDriverManager.chromedriver().setup();
         ChromeOptions chromeOptions = new ChromeOptions();
-        //chromeOptions.addArguments("--headless"); // headless mode
-        //chromeOptions.addArguments("--disable-gpu"); //disable gpu for faster loading
         try {
             return new RemoteWebDriver(new URL("http://localhost:4444"), chromeOptions);
         } catch (MalformedURLException e) {
