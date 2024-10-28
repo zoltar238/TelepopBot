@@ -110,8 +110,8 @@ public class TelegramService {
         if (nonUploadedItemModels.isEmpty()) {
             return "Archivos sin subir no detectados";
         } else {
-            //Thread thread = new Thread(() -> publishItems(nonUploadedItemModels));
-            //thread.start();
+            Thread thread = new Thread(() -> publishItems(nonUploadedItemModels));
+            thread.start();
             publishItems(nonUploadedItemModels);
             return "Archivos sin subir detectados, procediendo a subirlos";
         }
@@ -246,8 +246,8 @@ public class TelegramService {
             imageCounter = 1;
             uploadedItemModels.addAll(itemModels);
             int size = itemModels.size();
-            //Thread thread = new Thread(() -> publishItems(itemModels));
-            //thread.start();
+            Thread thread = new Thread(() -> publishItems(itemModels));
+            thread.start();
             publishItems(itemModels);
             return "Se van a subir " + size + " items";
         } else if (status.equals("imagesNotUploaded")) {
@@ -255,7 +255,6 @@ public class TelegramService {
         } else return "Comando incorrecto";
     }
 
-    //
     public String saveItems() {
         itemModels.clear();
         return "Articulos guardados, se subiran cuando reinicies el programa";
@@ -284,8 +283,8 @@ public class TelegramService {
             }
         }
         //upload selected items
-        //Thread thread = new Thread(() -> publishItems(itemModels));
-        //thread.start();
+        Thread thread = new Thread(() -> publishItems(itemModels));
+        thread.start();
         publishItems(itemModels);
         return "Se van a resubir " + itemPositions.length + " articulos";
     }

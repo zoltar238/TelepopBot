@@ -13,9 +13,9 @@ import static Config.BotConfig.properties;
 
 public class WallapopUploadPage {
 
-    WebDriver driver;
-    WebDriverWait wait;
-    JavascriptExecutor js;
+    private final WebDriver driver;
+    private WebDriverWait wait;
+    private final JavascriptExecutor js;
 
     private final By acceptCookies = new By.ByCssSelector("#onetrust-accept-btn-handler");
     private final By productTypeOption = By.xpath("//span[text()='Algo que ya no necesito']");
