@@ -58,12 +58,15 @@ public class WallapopUploadPage {
     //select product type
     public void selectProductType() {
         wait = new WebDriverWait(driver, Duration.ofSeconds(2));
+        System.out.println("holas");
         clickButton(productTypeOption, "No se ha encontrado el botón de tipo de producto");
     }
 
     //enter title
     public void enterTitle(String title) {
-        enterText(titleInputField, title);
+        System.out.println("intentando meter el texto");
+        System.out.println(title + Keys.ENTER);
+        enterText(titleInputField, title + Keys.ENTER);
         try {
             Thread.sleep(150);
         } catch (InterruptedException e) {
@@ -106,6 +109,7 @@ public class WallapopUploadPage {
     //upload images
     public void uploadImages(ArrayList<String> paths) {
         for (String path : paths) {
+            System.out.println("se va a intentar subir el elemento con el siguiente paht: " + path);
             WebElement fileInput = (WebElement) js.executeScript("return document.querySelector('.DropArea__wrapper input')");
             if (fileInput != null) {
                 fileInput.sendKeys(path);
@@ -130,14 +134,25 @@ public class WallapopUploadPage {
 
     // method for entering text inside a text box
     private void enterText(By locator, String text) {
-        try {
-            WebElement textField = wait.until(ExpectedConditions.visibilityOfElementLocated(locator));
-            textField.sendKeys(text);
-            textField.sendKeys(Keys.RETURN);
-        } catch (TimeoutException e) {
+    try {
+        System.out.println("vamos a meter el siguiente texto:" + text);
+        WebElement textField = wait.until(ExpectedConditions.visibilityOfElementLocated(locator));
+        if (textField.isDisplayed() && textField.isEnabled()) {
+            textField.clear(); // Limpia el campo antes de escribir
+            textField.sendKeys(text); // Ingresa el texto
+        } else {
+            System.out.println("El campo no está visible o habilitado.");
             success.set(false);
         }
+    } catch (TimeoutException e) {
+        System.out.println("No se encontró el elemento a tiempo.");
+        success.set(false);
+    } catch (Exception e) {
+        System.out.println("Error inesperado: " + e.getMessage());
+        success.set(false);
     }
+}
+
 
     // method for clicking buttons
     private void clickButton(By locator, String errorMessage) {

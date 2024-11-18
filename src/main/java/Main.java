@@ -17,6 +17,7 @@ public class Main {
     public static void main(String[] args) {
         //initialize configuration file
         BotConfig.initializeProperty();
+        PlayTest playTest = new PlayTest();
         SeleniumController seleniumController = new SeleniumController();
         ConfigChecker configChecker = new ConfigChecker();
         Map<ConfigCheckEnum, Boolean> configSatusMap = configChecker.checkConfigFile();
@@ -34,8 +35,8 @@ public class Main {
         } else {
             try {
                 //launch selenium server
-                Thread seleniumThread = new Thread(launchSelenium(seleniumController));
-                seleniumThread.start();
+                //Thread seleniumThread = new Thread(launchSelenium(seleniumController));
+                //seleniumThread.start();
                 //start telegram bot
                 TelegramBotsApi botsApi = new TelegramBotsApi(DefaultBotSession.class);
                 botsApi.registerBot(new TelegramController());

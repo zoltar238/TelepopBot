@@ -15,6 +15,7 @@ import static Config.BotConfig.properties;
 public class SeleniumController {
 
     private Process seleniumProcess;
+    private File seleniumJar;
 
     // Start selenium grid server with standalone mode
     public void startSelenium() {
@@ -22,7 +23,7 @@ public class SeleniumController {
             String seleniumPath = "src/main/resources/selenium-server-4.25.0.jar";
             if (!new File(seleniumPath).exists()) {
                 //seleniumPath = Objects.requireNonNull(getClass().getClassLoader().getResource("selenium-server-4.25.0.jar")).getPath();
-                File seleniumJar = extractFileFromJar("selenium-server-4.25.0.jar");
+                seleniumJar = extractFileFromJar("selenium-server-4.25.0.jar");
                 seleniumPath = seleniumJar.getAbsolutePath();
             }
 
@@ -77,13 +78,14 @@ public class SeleniumController {
             Thread.sleep(500);
         }
 
-        throw new RuntimeException("Selenium Grid didn't start within the expected time.");
+        throw new RuntimeException("El servidor no se inicio en el tiempo esperado.");
     }
 
     // Shut down selenium grid
     public void shutDownSelenium() {
         if (seleniumProcess != null) {
             seleniumProcess.destroyForcibly();
+            seleniumJar.delete();
         }
     }
 }

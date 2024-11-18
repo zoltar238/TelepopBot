@@ -53,7 +53,15 @@ public class WallapopService {
                 String[] info = itemImp.readInfoFile(itemModel.getInfoFile()); //{title, description}
 
                 WebDriver driver = initializeWebDriver();
+
+                try {
+                    Thread.sleep(2000);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+
                 WallapopUploadPage wallaUpload = new WallapopUploadPage(driver);
+
                 driver.manage().window().maximize();
                 //load upload page
                 driver.get("https://es.wallapop.com");
@@ -97,7 +105,9 @@ public class WallapopService {
         chromeOptions.addArguments("profile-directory=" + properties.getProperty("Profile"));
         chromeOptions.addArguments("--headless"); // headless mode
         chromeOptions.addArguments("--disable-gpu"); //disable gpu for faster loading
+
         WebDriver driver = new ChromeDriver(chromeOptions);
+
 
         driver.get("https://es.wallapop.com");
         //capture profile cookies
@@ -110,8 +120,13 @@ public class WallapopService {
     private WebDriver initializeWebDriver() {
         WebDriverManager.chromedriver().setup();
         ChromeOptions chromeOptions = new ChromeOptions();
+        //chromeOptions.addArguments("--no-sandbox");
+        // get web driver
+
+
         try {
-            return new RemoteWebDriver(new URL("http://localhost:4444"), chromeOptions);
+            //return new RemoteWebDriver(new URL("http://localhost:4444"), chromeOptions);
+            return new RemoteWebDriver(new URL("http://localhost:4444/wd/hub"), chromeOptions);
         } catch (MalformedURLException e) {
             throw new RuntimeException(e);
         }
