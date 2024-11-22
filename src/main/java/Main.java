@@ -42,9 +42,8 @@ public class Main {
             }
         }
 
-        //shutdown selenium grid on exit
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            System.out.println("Bot apagado");
+            log.info("Bot apagado");
         }));
     }
 

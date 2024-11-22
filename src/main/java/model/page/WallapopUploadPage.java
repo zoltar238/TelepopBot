@@ -122,11 +122,7 @@ public class WallapopUploadPage {
     //submit item
     public void submit(String name) {
         clickButton(submitButtonSelector, "No se pudo añadir el item");
-
-        String ANSI_GREEN = "\u001B[32m";
-        String ANSI_RESET = "\u001B[0m";
-
-        System.out.println(ANSI_GREEN + name + " añadido correctamente" + ANSI_RESET);
+        log.info("{} añadido correctamente", name);
     }
 
     // method for entering text inside a text box
@@ -134,17 +130,17 @@ public class WallapopUploadPage {
         try {
             WebElement textField = wait.until(ExpectedConditions.visibilityOfElementLocated(locator));
             if (textField.isDisplayed() && textField.isEnabled()) {
-                textField.clear(); // Limpia el campo antes de escribir
-                textField.sendKeys(text); // Ingresa el texto
+                textField.clear();
+                textField.sendKeys(text);
             } else {
-                System.out.println("El campo no está visible o habilitado.");
+                log.warn("El campo ubicado por {} no está visible o habilitado.", locator);
                 success.set(false);
             }
         } catch (TimeoutException e) {
-            System.out.println("No se encontró el elemento a tiempo.");
+            log.warn("TimeoutException: No se encontró el elemento '{}' a tiempo. Detalles: {}", locator, e.getMessage());
             success.set(false);
         } catch (Exception e) {
-            System.out.println("Error inesperado: " + e.getMessage());
+            log.warn("Error inesperado al interactuar con el campo ubicado por {}. Detalles: {}", locator, e.getMessage(), e);
             success.set(false);
         }
     }
@@ -161,22 +157,22 @@ public class WallapopUploadPage {
                 button.click();
                 return; //exit if successful
             } catch (TimeoutException | NoSuchElementException | ElementClickInterceptedException e) {
-                log.error("Error de interacción con el elemento: {} - Excepción: {}", errorMessage, e.getClass().getSimpleName(), e);
+                log.warn("Error de interacción con el elemento: {} - Excepción: {}", errorMessage, e.getClass().getSimpleName(), e);
                 success.set(false);
             } catch (ElementNotInteractableException e) {
                 log.warn("ElementNotInteractableException: El elemento no es interactuable. {} - Detalles: {}", errorMessage, e.getMessage());
                 success.set(false);
             } catch (InvalidElementStateException e) {
-                log.error("InvalidElementStateException: Estado inválido para interactuar con el elemento. {} - Detalles: {}", errorMessage, e.getMessage());
+                log.warn("InvalidElementStateException: Estado inválido para interactuar con el elemento. {} - Detalles: {}", errorMessage, e.getMessage());
                 success.set(false);
             } catch (StaleElementReferenceException e) {
-                log.error("StaleElementReferenceException: El elemento ya no es válido (posiblemente recargado). {} - Detalles: {}", errorMessage, e.getMessage());
+                log.warn("StaleElementReferenceException: El elemento ya no es válido (posiblemente recargado). {} - Detalles: {}", errorMessage, e.getMessage());
                 success.set(false);
             } catch (WebDriverException e) {
-                log.error("WebDriverException: Un error genérico de WebDriver ocurrió. {} - Detalles: {}", errorMessage, e.getMessage(), e);
+                log.warn("WebDriverException: Un error genérico de WebDriver ocurrió. {} - Detalles: {}", errorMessage, e.getMessage(), e);
                 success.set(false);
             } catch (Exception e) {
-                log.error("Exception inesperada: {} - Detalles: {}", errorMessage, e.getMessage(), e);
+                log.warn("Exception inesperada: {} - Detalles: {}", errorMessage, e.getMessage(), e);
                 success.set(false);
             }
 
