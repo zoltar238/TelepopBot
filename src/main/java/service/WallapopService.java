@@ -1,5 +1,6 @@
 package service;
 
+import controller.CookiesController;
 import dao.HashTagDAOImp;
 import dao.ItemDAOImp;
 import model.HashTagFileModel;
@@ -46,12 +47,26 @@ public class WallapopService {
         // Add all items to the queue
         itemsQueue.addAll(itemModels);
 
-        //get cookies
-        Set<Cookie> savedCookies = getCookie();
+        //get cookies and write them if necessary
+        Set<Cookie> savedCookies;
+        String cookieJson = "src/main/resources/cookies.json";
+        CookiesController cookiesController = new CookiesController();
+        if (cookiesController.validCookies(cookieJson)) {
+            savedCookies = cookiesController.getCookies(cookieJson);
+        } else {
+            savedCookies = getCookie();
+            cookiesController.writeCookies(cookieJson, savedCookies);
+        }
 
         // Initialize necessary web drivers
-        int drives = Integer.parseInt(properties.getProperty("BrowserInstances"));
-        for (int i = 0; i < drives; i++) {
+        int maxConcurrentDrivers = Integer.parseInt(properties.getProperty("BrowserInstances"));
+        int ammountOfDrivers;
+        if (itemModels.size() > maxConcurrentDrivers) {
+            ammountOfDrivers = maxConcurrentDrivers;
+        } else {
+            ammountOfDrivers = itemModels.size();
+        }
+        for (int i = 0; i < ammountOfDrivers; i++) {
             executor.submit(() -> {
                 // Initialize ChromeDriver
                 WebDriver driver = initializeWebDriver();

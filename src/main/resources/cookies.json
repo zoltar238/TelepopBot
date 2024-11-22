@@ -1,0 +1,342 @@
+[
+  {
+    "name": "_lr_sampling_rate",
+    "value": "100",
+    "path": "/",
+    "domain": "es.wallapop.com",
+    "expiry": "Nov 23, 2024, 7:30:37 PM",
+    "isSecure": false,
+    "isHttpOnly": false,
+    "sameSite": "Lax"
+  },
+  {
+    "name": "eupubconsent-v2",
+    "value": "CQIYvRgQIYvRgAcABBENBPFsAP_gAEPgAChQKjNX_G__bWlr8X73aftkeY1P9_h77sQxBhfJE-4FzLvW_JwXx2ExNA36tqIKmRIAu3TBIQNlGJDURVCgaogVryDMaEiUoTNKJ6BkiFMRM2dYCF5vm4tj-QCY5vr991dx2B-t7dr83dzyy41Hn3a5_2a0WJCdA5-tDfv9bROb-9IOd_x8v4v8_F_pE2_eT1l_tWvp7D9-cts7_XW89_fff_9Pn_-uB_-_3_vQVGAJMNCogDLIkJCDQMIIEAKgrCAigQBAAAkDRAQAmDAp2BgEusJEAIAUAAwQAgABBkACAAASABCIAIACgQAAQCBQABAAQDAQAMDAAGACwEAgABAdAxTAggECwASMyIhTAhCASCAlsqEEgCBBXCEIs8CiAREwUAAAJABWAAICwWBxJICViQQJcQbQAAEACAQQAFCKTswBBAGbLUXiwbRlaYFg-YLntMAyQIggAAAA.f_wACHwAAAAA",
+    "path": "/",
+    "domain": ".wallapop.com",
+    "expiry": "Nov 20, 2025, 1:10:11 AM",
+    "isSecure": false,
+    "isHttpOnly": false,
+    "sameSite": "Lax"
+  },
+  {
+    "name": "_lr_hash",
+    "value": "fffa8d46da1b452c5b50a2abadbd605f54020569673d7b759e539a29921924b0",
+    "path": "/",
+    "domain": "es.wallapop.com",
+    "expiry": "Dec 20, 2024, 1:11:06 AM",
+    "isSecure": false,
+    "isHttpOnly": false,
+    "sameSite": "Lax"
+  },
+  {
+    "name": "__gads",
+    "value": "ID\u003dc81dd3605e5bec8e:T\u003d1732061414:RT\u003d1732315626:S\u003dALNI_MZpDC1Od60WXC08YLmB4WuvnlDBnA",
+    "path": "/",
+    "domain": ".wallapop.com",
+    "expiry": "Dec 15, 2025, 1:10:14 AM",
+    "isSecure": true,
+    "isHttpOnly": false,
+    "sameSite": "None"
+  },
+  {
+    "name": "AMP_be52855061",
+    "value": "JTdCJTIyZGV2aWNlSWQlMjIlM0ElMjIyYWJjM2VhZC1mY2E5LTQyMzgtYWQ2NS1kOWQwY2Q1Mzk3MDQlMjIlMkMlMjJ1c2VySWQlMjIlM0ElMjItMTc1Njc1OTgwMzAwNjQ3MDkzMCUyMiUyQyUyMnNlc3Npb25JZCUyMiUzQTE3MzIwNjM2ODQxNjElMkMlMjJvcHRPdXQlMjIlM0FmYWxzZSUyQyUyMnBhZ2VDb3VudGVyJTIyJTNBMCU3RA\u003d\u003d",
+    "path": "/",
+    "domain": ".wallapop.com",
+    "expiry": "Nov 22, 2025, 11:42:15 PM",
+    "isSecure": false,
+    "isHttpOnly": false,
+    "sameSite": "Lax"
+  },
+  {
+    "name": "publisherId",
+    "value": "g0j2ellprrjy000000000000000000000000000000",
+    "path": "/",
+    "domain": ".wallapop.com",
+    "expiry": "Dec 22, 2024, 7:30:39 PM",
+    "isSecure": false,
+    "isHttpOnly": false,
+    "sameSite": "Lax"
+  },
+  {
+    "name": "rl_user_id",
+    "value": "RS_ENC_v3_ImcwajJlbGxwcnJqeSI%3D",
+    "path": "/",
+    "domain": ".wallapop.com",
+    "expiry": "Nov 22, 2025, 11:49:24 PM",
+    "isSecure": false,
+    "isHttpOnly": false,
+    "sameSite": "Lax"
+  },
+  {
+    "name": "cto_bundle",
+    "value": "IhoJ6l96NmY2QVVPRGtYUHVZWWFNampSTGpyZTloVnlJZHRUVkV0Q2glMkZwb0xjV2x1JTJCVXJGRFBDSGRKeFhIZ2tKeGFvaE9qRjYlMkJFRDZlcDhKJTJGN3JFY1NFMjBQS3lYdDFZbSUyQjJON0RMaTJwMmQ5OFhrbGo1TjNLNzRtQ0lpZGJsRnpSbUtob3B0ZzlnUTY2JTJGdFIwSG92JTJCSTBnQSUzRCUzRA",
+    "path": "/",
+    "domain": ".wallapop.com",
+    "expiry": "Dec 17, 2025, 11:49:41 PM",
+    "isSecure": false,
+    "isHttpOnly": false,
+    "sameSite": "Lax"
+  },
+  {
+    "name": "ab.storage.userId.47b54d36-7a86-4c05-9bfc-2d7b8aadd1ce",
+    "value": "%7B%22g%22%3A%22g0j2ellprrjy%22%2C%22c%22%3A1732061470084%2C%22l%22%3A1732315279377%7D",
+    "path": "/",
+    "domain": ".wallapop.com",
+    "expiry": "Dec 27, 2025, 11:41:19 PM",
+    "isSecure": false,
+    "isHttpOnly": false,
+    "sameSite": "Lax"
+  },
+  {
+    "name": "MPID",
+    "value": "-1756759803006470930",
+    "path": "/",
+    "domain": ".wallapop.com",
+    "expiry": "Nov 29, 2024, 11:49:23 PM",
+    "isSecure": false,
+    "isHttpOnly": false,
+    "sameSite": "Lax"
+  },
+  {
+    "name": "OptanonAlertBoxClosed",
+    "value": "2024-11-20T00:10:11.838Z",
+    "path": "/",
+    "domain": ".wallapop.com",
+    "expiry": "Nov 20, 2025, 1:10:11 AM",
+    "isSecure": false,
+    "isHttpOnly": false,
+    "sameSite": "Lax"
+  },
+  {
+    "name": "rl_session",
+    "value": "RS_ENC_v3_eyJpZCI6MTczMjMxNTI3OTQyMSwiZXhwaXJlc0F0IjoxNzMyMzE3NTc2MTk1LCJ0aW1lb3V0IjoxODAwMDAwLCJhdXRvVHJhY2siOnRydWUsInNlc3Npb25TdGFydCI6ZmFsc2V9",
+    "path": "/",
+    "domain": ".wallapop.com",
+    "expiry": "Nov 22, 2025, 11:49:36 PM",
+    "isSecure": false,
+    "isHttpOnly": false,
+    "sameSite": "Lax"
+  },
+  {
+    "name": "ab.storage.sessionId.47b54d36-7a86-4c05-9bfc-2d7b8aadd1ce",
+    "value": "%7B%22g%22%3A%225be029ee-3c69-a5da-25d2-4684428042b6%22%2C%22e%22%3A1732317564086%2C%22c%22%3A1732315279375%2C%22l%22%3A1732315764086%7D",
+    "path": "/",
+    "domain": ".wallapop.com",
+    "expiry": "Dec 27, 2025, 11:49:24 PM",
+    "isSecure": false,
+    "isHttpOnly": false,
+    "sameSite": "Lax"
+  },
+  {
+    "name": "_lr_env_src_ats",
+    "value": "true",
+    "path": "/",
+    "domain": "es.wallapop.com",
+    "expiry": "Dec 22, 2024, 11:41:40 PM",
+    "isSecure": false,
+    "isHttpOnly": false,
+    "sameSite": "Lax"
+  },
+  {
+    "name": "device_id",
+    "value": "2abc3ead-fca9-4238-ad65-d9d0cd539704",
+    "path": "/",
+    "domain": ".wallapop.com",
+    "expiry": "Nov 18, 2025, 11:57:18 PM",
+    "isSecure": false,
+    "isHttpOnly": false,
+    "sameSite": "Lax"
+  },
+  {
+    "name": "__gpi",
+    "value": "UID\u003d00000f9980b3301a:T\u003d1732061414:RT\u003d1732315626:S\u003dALNI_Mb_vDDqk5FNwy09-TP6ddisbVUyPg",
+    "path": "/",
+    "domain": ".wallapop.com",
+    "expiry": "Dec 15, 2025, 1:10:14 AM",
+    "isSecure": true,
+    "isHttpOnly": false,
+    "sameSite": "None"
+  },
+  {
+    "name": "_lr_env_exp",
+    "value": "1733357466978",
+    "path": "/",
+    "domain": "es.wallapop.com",
+    "expiry": "Dec 20, 2024, 1:11:06 AM",
+    "isSecure": false,
+    "isHttpOnly": false,
+    "sameSite": "Lax"
+  },
+  {
+    "name": "_ga_1QLHFVW5P3",
+    "value": "GS1.1.1732315279.7.1.1732315786.50.1.311996042",
+    "path": "/",
+    "domain": ".wallapop.com",
+    "expiry": "Dec 27, 2025, 11:49:46 PM",
+    "isSecure": false,
+    "isHttpOnly": false,
+    "sameSite": "Lax"
+  },
+  {
+    "name": "OTAdditionalConsentString",
+    "value": "1~70.89.108.122.149.196.259.311.318.320.323.415.486.494.495.540.574.864.981.1051.1095.1097.1205.1276.1301.1415.1421.1423.1449.1558.1570.1577.1651.1659.1716.1765.1870.1878.1889.1985.1987.2072.2135.2213.2253.2526.2568.2571.2575.2677.2822.2863.2883.2922.2958.2973.3100.3299.3309.3318.3324.3328.3330.3331.3531.3731.3831.4131.4531.4631.4731.4831.5231.6931.7235.7831.7931.8931.9731.10231.10631.10831.11031.11531.12831.13632.13731.14237.14332.15731.16831.16931.21233.23031.25131.25731.25931.26031.26831.27731.27831.28031.28731.28831.29631.31631.32531.33631.34231.34631.36831",
+    "path": "/",
+    "domain": ".wallapop.com",
+    "expiry": "Nov 20, 2025, 1:10:11 AM",
+    "isSecure": false,
+    "isHttpOnly": false,
+    "sameSite": "Lax"
+  },
+  {
+    "name": "_lr_geo_location",
+    "value": "ES",
+    "path": "/",
+    "domain": "es.wallapop.com",
+    "expiry": "Nov 23, 2024, 7:30:34 PM",
+    "isSecure": false,
+    "isHttpOnly": false,
+    "sameSite": "Lax"
+  },
+  {
+    "name": "accessToken",
+    "value": "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzdWIiOiI5MjQzOTQzNSIsImV4cCI6MTczMjM4NjY0MywiZGV2aWNlIjoiMmFiYzNlYWQtZmNhOS00MjM4LWFkNjUtZDlkMGNkNTM5NzA0IiwiaWF0IjoxNzMyMzAwMjQzfQ.G85gbbfNd8gTOarrlC4cQbvC5Y-JJWb5j_i8VeQQTiu_cMW5cjYCu7cTOQgNSaA0Ax-xgiaxb2qVHcPCyQsh19J0aZv4aMEgkHk2QL0Jv6ky8DkH34Thbi0-6IxQiKOGtx6YCwYAHCchfEXXUM9aDnomYkFf5gMgYn7sdT0EzIor-iDMNB3b1yTmt-dXz81UelowSgUHmmBrUkG2pFXkimedo8h-1o9xwb8KupcJkVeDHAzJmLWMZ3qxd1szk8PACU2KE16M4VAus7AP6_39r89e7OQBRM2_gkha7uCmTwJjlT3WXVQQ9L2YWmbyVZlJ5ZX6EA6tcIY4OLong7iKuQ",
+    "path": "/",
+    "domain": ".wallapop.com",
+    "expiry": "Nov 23, 2025, 7:30:39 PM",
+    "isSecure": false,
+    "isHttpOnly": false,
+    "sameSite": "Lax"
+  },
+  {
+    "name": "OptanonConsent",
+    "value": "isGpcEnabled\u003d0\u0026datestamp\u003dFri+Nov+22+2024+23%3A51%3A29+GMT%2B0100+(hora+est%C3%A1ndar+de+Europa+central)\u0026version\u003d202401.2.0\u0026browserGpcFlag\u003d0\u0026isIABGlobal\u003dfalse\u0026consentId\u003df968ea80-61aa-427b-beec-7218aa57d345\u0026interactionCount\u003d2\u0026landingPath\u003dNotLandingPage\u0026groups\u003dC0002%3A1%2CC0003%3A1%2CC0001%3A1%2CC0004%3A1%2CNDev%3A1%2CNGeo%3A1%2CV2STACK42%3A1\u0026hosts\u003dH25%3A1%2CH4%3A1%2CH6%3A1%2CH138%3A1%2CH12%3A1%2CH143%3A1%2CH17%3A1%2CH58%3A1%2CH59%3A1%2CH151%3A1%2CH118%3A1%2CH60%3A1%2CH61%3A1%2CH119%3A1%2CH62%3A1%2CH18%3A1%2CH128%3A1%2CH120%3A1%2CH131%3A1%2CH19%3A1%2CH146%3A1%2CH147%3A1%2CH20%3A1%2CH66%3A1%2CH67%3A1%2CH2%3A1%2CH121%3A1%2CH122%3A1%2CH69%3A1%2CH22%3A1%2CH132%3A1%2CH23%3A1%2CH115%3A1%2CH70%3A1%2CH97%3A1%2CH98%3A1%2CH133%3A1%2CH148%3A1%2CH71%3A1%2CH99%3A1%2CH3%3A1%2CH73%3A1%2CH74%3A1%2CH27%3A1%2CH134%3A1%2CH100%3A1%2CH28%3A1%2CH135%3A1%2CH29%3A1%2CH30%3A1%2CH101%3A1%2CH136%3A1%2CH117%3A1%2CH31%3A1%2CH102%3A1%2CH33%3A1%2CH76%3A1%2CH77%3A1%2CH137%3A1%2CH34%3A1%2CH35%3A1%2CH36%3A1%2CH37%3A1%2CH104%3A1%2CH39%3A1%2CH40%3A1%2CH106%3A1%2CH41%3A1%2CH139%3A1%2CH140%3A1%2CH107%3A1%2CH42%3A1%2CH141%3A1%2CH9%3A1%2CH80%3A1%2CH123%3A1%2CH82%3A1%2CH44%3A1%2CH142%3A1%2CH45%3A1%2CH46%3A1%2CH84%3A1%2CH85%3A1%2CH109%3A1%2CH87%3A1%2CH47%3A1%2CH88%3A1%2CH112%3A1%2CH124%3A1%2CH50%3A1%2CH51%3A1%2CH15%3A1%2CH89%3A1%2CH16%3A1%2CH52%3A1%2CH54%3A1%2CH126%3A1%2CH144%3A1%2CH92%3A1%2CH55%3A1%2CH56%3A1%2CH93%3A1%2CH157%3A1%2CH94%3A1%2CH150%3A1%2CH127%3A1\u0026genVendors\u003dV5%3A1%2CV11%3A1%2CV6%3A0%2CV7%3A1%2CV16%3A1%2C\u0026AwaitingReconsent\u003dfalse\u0026geolocation\u003dES%3BMD",
+    "path": "/",
+    "domain": ".wallapop.com",
+    "expiry": "Nov 22, 2025, 11:51:29 PM",
+    "isSecure": false,
+    "isHttpOnly": false,
+    "sameSite": "Lax"
+  },
+  {
+    "name": "rl_anonymous_id",
+    "value": "RS_ENC_v3_Ii0xNzU2NzU5ODAzMDA2NDcwOTMwIg%3D%3D",
+    "path": "/",
+    "domain": ".wallapop.com",
+    "expiry": "Nov 22, 2025, 11:49:24 PM",
+    "isSecure": false,
+    "isHttpOnly": false,
+    "sameSite": "Lax"
+  },
+  {
+    "name": "__stripe_mid",
+    "value": "a6d31adb-9af4-4f59-b1df-b5fcf7c79ccd4a16ec",
+    "path": "/",
+    "domain": ".es.wallapop.com",
+    "expiry": "Nov 22, 2025, 8:56:43 PM",
+    "isSecure": true,
+    "isHttpOnly": false,
+    "sameSite": "Strict"
+  },
+  {
+    "name": "g_state",
+    "value": "{\"i_l\":0}",
+    "path": "/",
+    "domain": "es.wallapop.com",
+    "expiry": "May 21, 2025, 8:30:38 PM",
+    "isSecure": false,
+    "isHttpOnly": false,
+    "sameSite": "Lax"
+  },
+  {
+    "name": "wallapop_keep_session",
+    "value": "true",
+    "path": "/",
+    "domain": ".wallapop.com",
+    "expiry": "Nov 23, 2024, 12:14:23 AM",
+    "isSecure": false,
+    "isHttpOnly": false,
+    "sameSite": "Lax"
+  },
+  {
+    "name": "_ga",
+    "value": "GA1.1.1085988412.1731970639",
+    "path": "/",
+    "domain": ".wallapop.com",
+    "expiry": "Dec 27, 2025, 11:49:24 PM",
+    "isSecure": false,
+    "isHttpOnly": false,
+    "sameSite": "Lax"
+  },
+  {
+    "name": "deviceAccessToken",
+    "value": "2abc3ead-fca9-4238-ad65-d9d0cd539704",
+    "path": "/",
+    "domain": ".wallapop.com",
+    "expiry": "Nov 23, 2025, 7:30:39 PM",
+    "isSecure": false,
+    "isHttpOnly": false,
+    "sameSite": "Lax"
+  },
+  {
+    "name": "__eoi",
+    "value": "ID\u003ddaee6d0f99e28f06:T\u003d1732061414:RT\u003d1732315626:S\u003dAA-AfjaXY0us5VcADiH4S9voyRQ_",
+    "path": "/",
+    "domain": ".wallapop.com",
+    "expiry": "May 19, 2025, 2:10:14 AM",
+    "isSecure": true,
+    "isHttpOnly": false,
+    "sameSite": "None"
+  },
+  {
+    "name": "subdomain",
+    "value": "es",
+    "path": "/",
+    "domain": ".wallapop.com",
+    "expiry": "Nov 23, 2025, 7:30:39 PM",
+    "isSecure": false,
+    "isHttpOnly": false,
+    "sameSite": "Lax"
+  },
+  {
+    "name": "rl_page_init_referrer",
+    "value": "RS_ENC_v3_IiRkaXJlY3Qi",
+    "path": "/",
+    "domain": ".wallapop.com",
+    "expiry": "Nov 22, 2025, 11:49:24 PM",
+    "isSecure": false,
+    "isHttpOnly": false,
+    "sameSite": "Lax"
+  },
+  {
+    "name": "_lr_env",
+    "value": "eyJlbnZlbG9wZSI6WyJBck40UTVPbzZ3R0ZmbU1NVHRMTThMTV9CTW5jNTN3VndwWk1qWmE0LXFJRTV2VW5YRjhPU2tvQm1Md0VxazdUT0NUUDExWWJ6MjAiXX0%3D",
+    "path": "/",
+    "domain": "es.wallapop.com",
+    "expiry": "Dec 20, 2024, 1:11:06 AM",
+    "isSecure": false,
+    "isHttpOnly": false,
+    "sameSite": "Lax"
+  },
+  {
+    "name": "ab.storage.deviceId.47b54d36-7a86-4c05-9bfc-2d7b8aadd1ce",
+    "value": "%7B%22g%22%3A%225c8f3d7f-4a51-dfbb-3281-0448bb2c4f87%22%2C%22c%22%3A1731970638913%2C%22l%22%3A1732315279376%7D",
+    "path": "/",
+    "domain": ".wallapop.com",
+    "expiry": "Dec 27, 2025, 11:41:19 PM",
+    "isSecure": false,
+    "isHttpOnly": false,
+    "sameSite": "Lax"
+  },
+  {
+    "name": "refreshToken",
+    "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJnMGoyZWxscHJyankiLCJpYXQiOjE3MzIzMDAyNDN9.yqjX0H88MoUIZMOzJ1fgTX5eB9PvJPRk0deVahsquQk",
+    "path": "/",
+    "domain": ".wallapop.com",
+    "expiry": "Feb 22, 2025, 7:30:39 PM",
+    "isSecure": false,
+    "isHttpOnly": true,
+    "sameSite": "Strict"
+  }
+]

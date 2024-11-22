@@ -1,140 +1,49 @@
 package dao;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.microsoft.playwright.options.Cookie;
-import com.microsoft.playwright.options.SameSiteAttribute;
-import model.CookieModel;
-import model.CookieModel2;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+import org.openqa.selenium.Cookie;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.List;
-import java.util.stream.Collectors;
+import java.io.*;
+import java.lang.reflect.Type;
+import java.util.HashSet;
+import java.util.Set;
 
 public class CookieDAOImp implements CookieDAO {
-    @Override
-    public void writeCookies(String path, List<Cookie> cookies) throws IOException {
-        ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.writeValue(new File(path), cookies);
-    }
+    private final Gson gson = new Gson();
 
     @Override
-    public List<Cookie> getCookies(String path) {
-        ObjectMapper objectMapper = new ObjectMapper();
-        System.out.println("Reading cookies from file: " + path);
-
-        try {
-            // Read the JSON file into a list of CookieModel
-            List<CookieModel> customCookies = objectMapper.readValue(new File(path), new TypeReference<>() {
-            });
-
-            // Map CookieModel to Playwright Cookie objects
-            return customCookies.stream()
-                    .map(customCookie -> {
-                        // Create a new Playwright Cookie
-                        Cookie cookie = new Cookie(customCookie.name, customCookie.value);
-
-                        // Set optional fields if present in CookieModel
-                        if (customCookie.url != null) {
-                            cookie.setUrl(customCookie.url);
-                        }
-                        if (customCookie.domain != null) {
-                            cookie.setDomain(customCookie.domain);
-                        }
-                        if (customCookie.path != null) {
-                            cookie.setPath(customCookie.path);
-                        }
-                        if (customCookie.expires != null) {
-                            cookie.setExpires(customCookie.expires);
-                        }
-                        if (customCookie.httpOnly != null) {
-                            cookie.setHttpOnly(customCookie.httpOnly);
-                        }
-                        if (customCookie.secure != null) {
-                            cookie.setSecure(customCookie.secure);
-                        }
-                        if (customCookie.sameSite != null) {
-                            if (customCookie.sameSite.equals("LAX")) {
-                                cookie.setSameSite(SameSiteAttribute.LAX);
-                            }
-                            if (customCookie.sameSite.equals("NONE")) {
-                                cookie.setSameSite(SameSiteAttribute.NONE);
-                            }
-                            if (customCookie.sameSite.equals("STRICT")) {
-                                cookie.setSameSite(SameSiteAttribute.STRICT);
-                            }
-                        }
-
-                        // Return the constructed Cookie
-                        return cookie;
-                    })
-                    .collect(Collectors.toList());
+    public void writeCookies(String path, Set<Cookie> cookies) {
+        try (Writer writer = new FileWriter(path)) {
+            // Convertir cookies a JSON y escribir al archivo
+            gson.toJson(cookies, writer);
+            System.out.println("Cookies guardadas correctamente en: " + path);
         } catch (IOException e) {
-            throw new RuntimeException("Error reading cookies from file: " + path, e);
+            System.out.println("Error al guardar cookies: " + e.getMessage());
         }
     }
 
     @Override
-    public List<Cookie> getCookies2(String path) {
-        ObjectMapper objectMapper = new ObjectMapper();
-        System.out.println("Reading cookies from file: " + path);
-
-        try {
-            // Leer el archivo JSON en una lista de CookieModel2
-            List<CookieModel2> customCookies = objectMapper.readValue(new File(path), new TypeReference<>() {
-            });
-
-            // Mapear CookieModel2 a objetos Cookie de Playwright
-            return customCookies.stream()
-                    .map(customCookie -> {
-                        // Crear un nuevo objeto Cookie de Playwright
-                        Cookie cookie = new Cookie(customCookie.getName(), customCookie.getValue());
-
-                        // Establecer los campos opcionales si están presentes en CookieModel2
-                        if (customCookie.getDomain() != null) {
-                            cookie.setDomain(customCookie.getDomain());
-                        }
-                        if (customCookie.getPath() != null) {
-                            cookie.setPath(customCookie.getPath());
-                        }
-                        if (customCookie.getStoreId() != null) {
-                            // No hay un equivalente directo en Playwright para storeId, así que puedes ignorarlo
-                        }
-                        if (customCookie.getExpirationDate() > 0) {
-                            cookie.setExpires(customCookie.getExpirationDate());
-                        }
-                        if (customCookie.isHttpOnly()) {
-                            cookie.setHttpOnly(true);
-                        }
-                        if (customCookie.isSecure()) {
-                            cookie.setSecure(true);
-                        }
-                        if (customCookie.getSameSite() != null) {
-                            switch (customCookie.getSameSite()) {
-                                case "LAX":
-                                    cookie.setSameSite(SameSiteAttribute.LAX);
-                                    break;
-                                case "NONE":
-                                    cookie.setSameSite(SameSiteAttribute.NONE);
-                                    break;
-                                case "STRICT":
-                                    cookie.setSameSite(SameSiteAttribute.STRICT);
-                                    break;
-                                default:
-                                    // Si el valor no coincide, no se asigna el atributo SameSite
-                                    break;
-                            }
-                        }
-
-                        // Devolver la cookie construida
-                        return cookie;
-                    })
-                    .collect(Collectors.toList());
+    public Set<Cookie> getCookies(String path) {
+        try (Reader reader = new FileReader(path)) {
+            // Leer el JSON del archivo y convertirlo a Set de cookies
+            Type setType = new TypeToken<HashSet<Cookie>>() {
+            }.getType();
+            Set<Cookie> cookies = gson.fromJson(reader, setType);
+            System.out.println("Cookies cargadas correctamente desde: " + path);
+            return cookies;
+        } catch (FileNotFoundException e) {
+            System.out.println("Archivo de cookies no encontrado: " + e.getMessage());
         } catch (IOException e) {
-            throw new RuntimeException("Error reading cookies from file: " + path, e);
+            System.out.println("Error al leer cookies: " + e.getMessage());
         }
+        return new HashSet<>();
     }
 
-
+    @Override
+    public boolean validCookies(String path) {
+        File cookieFile = new File(path);
+        // Verificar si el archivo existe y no está vacío
+        return cookieFile.exists() && cookieFile.length() > 0;
+    }
 }

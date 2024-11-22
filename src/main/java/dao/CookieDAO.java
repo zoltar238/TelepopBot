@@ -1,14 +1,14 @@
 package dao;
 
-import com.microsoft.playwright.options.Cookie;
 
-import java.io.IOException;
-import java.util.List;
+import org.openqa.selenium.Cookie;
+
+import java.util.Set;
 
 public interface CookieDAO {
-    void writeCookies(String path, List<Cookie> cookies) throws IOException;
+    void writeCookies(String path, Set<Cookie> cookies);
 
-    List<Cookie> getCookies(String path);
+    Set<Cookie> getCookies(String path);
 
-    List<Cookie> getCookies2(String path);
+    boolean validCookies(String path);
 }

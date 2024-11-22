@@ -1,5 +1,6 @@
 package model.page;
 
+import lombok.extern.slf4j.Slf4j;
 import org.openqa.selenium.*;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
@@ -10,7 +11,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import static config.BotConfig.properties;
 
-
+@Slf4j
 public class WallapopUploadPage {
 
     private final WebDriver driver;
@@ -63,8 +64,6 @@ public class WallapopUploadPage {
 
     //enter title
     public void enterTitle(String title) {
-        System.out.println("intentando meter el texto");
-        System.out.println(title + Keys.ENTER);
         enterText(titleInputField, title + Keys.ENTER);
         try {
             Thread.sleep(150);
@@ -162,28 +161,25 @@ public class WallapopUploadPage {
                 button.click();
                 return; //exit if successful
             } catch (TimeoutException | NoSuchElementException | ElementClickInterceptedException e) {
+                log.error("Error de interacción con el elemento: {} - Excepción: {}", errorMessage, e.getClass().getSimpleName(), e);
                 success.set(false);
             } catch (ElementNotInteractableException e) {
-                System.out.println("ElementNotInteractableException: El elemento no es interactuable.");
-                System.out.println(errorMessage);
+                log.warn("ElementNotInteractableException: El elemento no es interactuable. {} - Detalles: {}", errorMessage, e.getMessage());
                 success.set(false);
             } catch (InvalidElementStateException e) {
-                System.out.println("InvalidElementStateException: El estado del elemento no permite la interacción.");
-                System.out.println(errorMessage);
+                log.error("InvalidElementStateException: Estado inválido para interactuar con el elemento. {} - Detalles: {}", errorMessage, e.getMessage());
                 success.set(false);
             } catch (StaleElementReferenceException e) {
-                System.out.println("StaleElementReferenceException: El elemento ya no es válido (puede haber sido recargado).");
-                System.out.println(errorMessage);
+                log.error("StaleElementReferenceException: El elemento ya no es válido (posiblemente recargado). {} - Detalles: {}", errorMessage, e.getMessage());
                 success.set(false);
             } catch (WebDriverException e) {
-                System.out.println("WebDriverException: Un error genérico de WebDriver ha ocurrido.");
-                System.out.println(errorMessage);
+                log.error("WebDriverException: Un error genérico de WebDriver ocurrió. {} - Detalles: {}", errorMessage, e.getMessage(), e);
                 success.set(false);
             } catch (Exception e) {
-                System.out.println("Exception: Se produjo una excepción no esperada: " + e.getMessage());
-                System.out.println(errorMessage);
+                log.error("Exception inesperada: {} - Detalles: {}", errorMessage, e.getMessage(), e);
                 success.set(false);
             }
+
 
             // Set success status as false
             success.set(false);
