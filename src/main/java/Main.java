@@ -1,43 +1,38 @@
-import Config.BotConfig;
-import Controller.SeleniumController;
-import Controller.TelegramController;
-import Model.ConfigCheckEnum.ConfigCheckEnum;
-import Util.ConfigChecker;
-import View.BadConfigView;
-import View.SystemTrayIcon;
+import config.BotConfig;
+import controller.ConfigController;
+import controller.TelegramController;
 import lombok.extern.slf4j.Slf4j;
 import org.telegram.telegrambots.meta.TelegramBotsApi;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
-
-import java.util.Map;
+import view.SystemTrayIcon;
 
 @Slf4j
 public class Main {
     public static void main(String[] args) {
-        //initialize configuration file
+        log.info("Iniciando el bot");
+
+        // Set chrome driver
+        System.setProperty("webdriver.chrome.driver", "src/main/resources/chromedriver.exe");
+
+        // Initialize configuration file
         BotConfig.initializeProperty();
-        PlayTest playTest = new PlayTest();
-        SeleniumController seleniumController = new SeleniumController();
-        ConfigChecker configChecker = new ConfigChecker();
-        Map<ConfigCheckEnum, Boolean> configSatusMap = configChecker.checkConfigFile();
-        boolean badConfig = false;
-        //check if configurations are ok
-        for (Map.Entry<ConfigCheckEnum, Boolean> entry : configSatusMap.entrySet()) {
-            if (!entry.getValue()) {
-                badConfig = true;
-                break;
-            }
-        }
+
+
+        // Check configs
+        log.info("Comprobando configuraciones");
+        ConfigController configController = new ConfigController();
+        boolean badConfig = configController.isConfigBad();
         //if there is a bad config, launch warning, else, begin program
         if (badConfig) {
-            BadConfigView badConfigView = new BadConfigView(configSatusMap);
+            configController.getConfigSatusMap().forEach((key, value) -> {
+                if (!value) {
+                    log.error(String.valueOf(key));
+                }
+            });
         } else {
+            configController.getConfigSatusMap().forEach((key, value) -> log.info(String.valueOf(key)));
             try {
-                //launch selenium server
-                //Thread seleniumThread = new Thread(launchSelenium(seleniumController));
-                //seleniumThread.start();
-                //start telegram bot
                 TelegramBotsApi botsApi = new TelegramBotsApi(DefaultBotSession.class);
                 botsApi.registerBot(new TelegramController());
                 //create tray icon
@@ -49,17 +44,9 @@ public class Main {
 
         //shutdown selenium grid on exit
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            seleniumController.shutDownSelenium();
             System.out.println("Bot apagado");
         }));
     }
 
-    private static Runnable launchSelenium(SeleniumController seleniumController) {
-        return () -> {
-            System.out.println("Iniciando el servidor");
-            seleniumController.startSelenium();
-            System.out.println("\nSe ha iniciado el servidor");
-        };
-    }
 }
 
