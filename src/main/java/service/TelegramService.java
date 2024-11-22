@@ -21,7 +21,6 @@ import static config.BotConfig.properties;
 
 public class TelegramService {
     public Map<String, BufferedImage> downloadedImages = new ConcurrentHashMap<>();
-    //private final WallapopService wallaService = new WallapopService();
     private final WallapopService wallaService = new WallapopService();
     private final ItemDAOImp itemImp = new ItemDAOImp();
     @Getter
