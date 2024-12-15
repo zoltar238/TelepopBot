@@ -176,7 +176,6 @@ public class WallapopUploadPage {
                 success.set(false);
             }
 
-
             // Set success status as false
             success.set(false);
         }
